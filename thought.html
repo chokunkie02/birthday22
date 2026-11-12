@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เทมเพลตซองจดหมาย - ความคิด</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* --- Color Scheme (Same as envelope.html) --- */
+            --bg-color: #F8F6FF;
+            --primary-text: #8B5DFF;
+            --darker-text: #6A3ED4;
+            --primary-accent: #B794F6;
+            --envelope-light: #E6D8FF;
+            --envelope-dark: #9B6BFF;
+            --letter-text: #2D3748;
+            --letter-title: #1A202C;
+            --letter-signature: #553C9A;
+        }
+        
+        body {
+            font-family: 'Kanit', sans-serif;
+            overflow: hidden;
+            background-color: var(--bg-color);
+        }
+        
+        /* --- Transitions (Same as envelope.html) --- */
+        #transition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9999;
+            transition: opacity 0.8s ease-in-out;
+        }
+        .view {
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .view.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* --- Thought View Styles --- */
+        #thought-view {
+            background-color: #F8F6FF;
+            position: relative;
+        }
+
+        /* Typewriter effect */
+        .typewriter {
+            /* overflow: hidden; */ 
+            /* white-space: nowrap; */ 
+            border-right: 3px solid var(--primary-text);
+            
+            animation: blink-caret 0.75s step-end infinite;
+            
+            max-width: 100%;
+            text-align: center; 
+            
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+        .typewriter.no-caret {
+            border-right: none;
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: var(--primary-text); }
+        }
+
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.6;
+            font-size: 12px;
+            animation: float-particle 8s linear infinite;
+        }
+        @keyframes float-particle {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Heart particles */
+        .heart-particle {
+            position: absolute;
+            pointer-events: none;
+            font-size: 16px;
+            color: #FF69B4; /* <--- แก้เป็นแบบนี้ครับ */
+            animation: float-heart 3s ease-out forwards;
+        }
+        @keyframes float-heart {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-200px) scale(0.3);
+                opacity: 0;
+            }
+        }
+
+        /* Thought text animations */
+        #thought-text {
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+            text-shadow: 1px 1px 3px rgba(139, 93, 255, 0.1);
+            font-family: 'Kanit', sans-serif;
+            font-weight: 400;
+        }
+        .fade-in-thought {
+            animation: fade-in-up 1.2s ease-out forwards;
+        }
+        .fade-out-thought {
+            animation: fade-out-down 0.8s ease-in forwards;
+        }
+        @keyframes fade-in-up {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes fade-out-down {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+        }
+
+        /* Breathing effect for special thoughts */
+        .breathing {
+            animation: breathe 3s ease-in-out infinite;
+        }
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Soft glow effect */
+        .soft-glow {
+            text-shadow: 0 0 20px rgba(139, 93, 255, 0.3), 
+                         0 0 40px rgba(139, 93, 255, 0.2),
+                         1px 1px 3px rgba(139, 93, 255, 0.1);
+        }
+
+        /* === โค้ดสำหรับมือถือ === */
+        @media (max-width: 600px) {
+            .max-w-4xl.px-8,
+            .w-full.px-8 { /* */
+                padding-left: 1.25rem;
+                padding-right: 1.25rem;
+            }
+        }
+        /* === สิ้นสุดส่วนที่เพิ่ม === */
+
+        /* --- [เพิ่ม] Style สำหรับ Modal --- */
+        #start-modal {
+            transition: opacity 0.5s ease-in-out;
+        }
+        /* --- [สิ้นสุดส่วนที่เพิ่ม] --- */
+
+    </style>
+</head>
+<body style="background-color: #F8F6FF;">
+
+    <audio id="background-music" loop>
+        <source src="song/sound.mp3" type="audio/mpeg">
+        เบราว์เซอร์ของคุณไม่รองรับการเล่นเสียง
+    </audio>
+    <div id="transition-overlay"></div>
+
+    <div id="start-modal" class="fixed inset-0 z-[10001] flex items-center justify-center" style="background-color: rgba(248, 246, 255, 0.9);">
+        <button id="start-thought-button" class="text-white font-bold py-3 px-8 sm:py-4 sm:px-10 rounded-full text-lg sm:text-xl md:text-2xl active:scale-95 transition-all duration-200 shadow-lg" style="background-color: var(--primary-text);" onmouseover="this.style.backgroundColor='var(--darker-text)'" onmouseout="this.style.backgroundColor='var(--primary-text)'">
+            กดเพื่ออ่าน
+        </button>
+    </div>
+    <div id="thought-view" class="view relative overflow-hidden" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; width: 100vw;">
+        <div id="particles-container" class="absolute inset-0 pointer-events-none">
+            </div>
+        
+        <div class="text-center w-full px-8 relative z-10" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <div id="thought-text" class="font-medium leading-relaxed" style="color: var(--primary-text); min-height: 1.5em; font-size: clamp(1.5rem, 5vw, 2.5rem); letter-spacing: 0.05em;">
+                </div>
+            
+            <button id="continue-button" class="text-white font-bold py-3 px-6 rounded-full transition duration-300 shadow-lg opacity-0 pointer-events-none" style="background-color: var(--primary-text); transform: scale(0.8); margin-top: 2rem;" onmouseover="this.style.backgroundColor='var(--darker-text)'" onmouseout="this.style.backgroundColor='var(--primary-text)'">
+                กลับสู่หน้าแรก
+            </button>
+        </div>
+        
+        <div id="heart-container" class="absolute inset-0 pointer-events-none">
+            </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const transitionOverlay = document.getElementById('transition-overlay');
+        
+        // --- [เพิ่ม] Element สำหรับ Modal และ Audio ---
+        const startModal = document.getElementById('start-modal');
+        const startThoughtButton = document.getElementById('start-thought-button');
+        const bgMusic = document.getElementById('background-music');
+        // --- [สิ้นสุดส่วนที่เพิ่ม] ---
+
+        // Thought View Elements
+        const thoughtView = document.getElementById('thought-view');
+        const thoughtText = document.getElementById('thought-text');
+        const continueButton = document.getElementById('continue-button');
+        const particlesContainer = document.getElementById('particles-container');
+        const heartContainer = document.getElementById('heart-container');
+        
+        let currentThought = 0;
+        let isThinking = false;
+        let typewriterTimeout;
+
+        // Thought content - the inner thoughts after reading the letter
+        const thoughtMessages = [
+            "ก่อนอื่น…",
+            "พี่ต้องบอกก่อนว่าเว็บอวยพรที่น้องกำลังดูอยู่นี่ พี่ไม่ได้ทำเล่น ๆ นะ",
+            "ถึงมันจะดูเล่นๆ ก็เถอะ56555",
+            "น้องเคยบอกว่าอยากได้ ตั้งแต่วันนั้นพี่ก็วางแผนทำเว็บให้จริงจังมากก",
+            "จริงจังกว่าคนอื่นๆที่พี่เคยทำให้เลย เพราะคนอื่นเขาไม่ได้บอกว่าให้พี่ทำ",
+            "แต่น้องเป็นคนแรกเลยที่บอกว่าอยากให้พี่ทำให้เนี่ยย",
+            "จริงๆ ตอนพี่เริ่มออกแบบเว็บนี้ พี่ก็ไม่ได้คิดว่าจะใส่อะไรเยอะนะ",
+            "แต่พอทำไปเรื่อยๆ มันก็เพิ่มลูกเล่นเพิ่มเอฟเฟคต่างๆไปเรื่อยๆ ที่จริงโครงพี่มีแค่เป่าเค้ก แล้วก็มาหน้านี้เลย แต่ทำไปเรื่อยๆ พี่ก็ออกแบบเรื่อยๆ จนมีเอฟเฟคเยอะแยะไปหมดละ56555",
+            "คุยเล่นไปเยอะละ อะมาเข้าเรื่องกันดีกว่าา",
+            "ตอนนี้พี่ก็รู้สึกว่า…",
+            "เราก็คุยกันมาสักพักแล้วนะ",
+            "ถึงจะไม่ได้คุยกันทุกวัน แต่ทุกครั้งที่คุย พี่มีความสุขมากเลยนะ มีความสุขมากๆเลย",
+            "เพราะงั้น พี่ไม่รู้น้องจะคิดเหมือนกันรึป่าวนะ แต่พี่อยากบอกว่า…",
+            "พี่ชอบน้องนะ",
+            "พี่ก็ไม่รู้นะว่า ที่พี่ชอบเนี่ยเพราะอะไร แต่แบบคุยกับน้องแล้วมันรู้สึกดี คุยด้วยแล้วสบายใจอะ พี่บอกไม่ถูกเหมือนกัน5555",
+            "พี่ไม่รู้ว่ามันจะดีรึป่าว ที่พี่บอกไปแบบนี้",
+            "แต่ไม่ต้องรีบตอบ ไม่ต้องกดดันนะเว้ยย พี่แค่อยากบอกเฉยๆ",
+            "อ่านจบแล้วจะเก็บไว้เฉยๆ ก็ได้ พี่โอเคคค",
+            "จริงๆ พี่ก็แอบกลัวอยู่นะ ว่าน้องอาจจะรู้สึกแย่ที่พี่บอกแบบนี้",
+            "แต่ก็เนาะ พี่ก็เป็นคนเขินๆอยู่ละ บอกในนี้แม่งไปเลยดีกว่า5555",
+            "มีเรื่องนึง อันนี้พี่อยากเล่าให้น้องฟังเฉยๆนะ",
+            "วันนั้นวันอะไรสักเนี่ย ตอนนั้นนไปบ้านพี่บอสอชิระ น้องไม่รู้รู้จักป่าวนะ",
+            "แล้วก็ไออิงอะ มันบอกพี่เว้ยว่าโชกุนมึงรู้จักน้องคนนี้ไหม แล้วแบบมันยื่นมาให้ดู ก็คงไม่ต้องบอกนะว่าใคร56545",
+            "แล้วมันบอกพี่ว่ามันจะจีบน้องอะ แล้วพี่แบบ…โคตรไม่อยากให้มันทักเลย",
+            "แต่พี่ก็พูดอะไรไม่ได้ จะบอกมันว่า“เห้ยมึงอย่าทักนะ” แบบนี้ก็ไม่ได้55655",
+            "แล้วเราตอนนั้นก็ยังไม่ได้คุยกันเยอะขนาดนั้นด้วย",
+            "แต่อันนี้ก็เป็นความรู้สึกแรกแหละที่พี่สนใจน้องอะ พี่ไม่อยากให้มันทักหาน้องเลยตอนนั้น",
+            "พี่จำไม่ได้ละว่าบอกว่าอะไร แต่น่าจะฟีลว่า ทักได้ แต่อย่าทักเลยดีกว่าอะไรประมาณนี้",
+            "แต่สุดท้ายมันก็ทัก แม่งงง56465",
+            "แต่เพราะเหตุการณ์นั้นแหละ ที่ทำให้พี่เริ่มรู้สึกกับน้องมานิดนึงละ",
+            "แล้วก็หลังจากนั้น จากที่พี่จำได้เราก็นานๆคุยกันที จนมีครั้งนึง ตอนนั้นน้องทักมาเรื่องมหาลัยแล้วพี่โทรนี่แหละแล้วอธิบายให้ฟัง ตอนนั้นพอพี่วางสายไป พี่ก็รู้สึกแปลกๆละว่าเอ๊ะ ทำไมต้องโทรไปด้วยวะ แล้วแบบทำไมตอนที่โทรไปแล้วรู้สึกดีสัสๆ5655",
+            "แล้วก็มีอีกครั้งนึกที่น้องมาให้พี่ช่วยทำค่ายหล่อเกียร์ให้ ตอนน้น พี่ก็ไม่ได้ว่างนะ แต่แบบเห้ยน้องทักมาให้ช่วยเลยย พี่ก็เลย ไม่เป็นไร เว้นงานหลักไว้ก่อนมาทำอันนี้ก่อนน เพราะแบบตอนน้นพอทำอะไรให้น้องหรือว่าช่วยน้องมันรู้สึกดีไปหมดละ6555",
+            "สุดท้ายนี้นะ…",
+            "ไม่ว่าจะตอบยังไงหรือไม่ตอบเลยก็ได้ พี่แค่อยากบอกความความรู้สึกพี่ออกไป",
+            "ว่าพี่ชอบน้องนะ",
+            "ซึ่งตอนนี้พี่ว่ามันก็คงไม่เหมาะที่จะพัฒนาความสัมพันธ์",
+            "เพราะช่วงนี้น้องมีอะไรหลายๆอย่างที่ต้องจัดการ",
+            "เอาเป็นว่าให้น้องผ่านช่วงนี้้ ช่วงสอบเข้ามหาลัยไปก่อนน หรือให้น้องมีมหาลัยก่อนก็ด้ายย",
+            "แล้วก็ค่อยตัดสินใจอีกทีว่าจะเอายังไงง",
+            "ถ้าน้องโอเค ก็พิมพ์บอกพี่ในแชทว่า ปลาแซลม่อนย่างก็ได้55555",
+            "ถ้าไม่โอเคก็ไม่ต้องพิมพ์อะไรมาก็ได้ พี่เข้าใจ",
+            "ยังไงพี่ก็จะอยู่ข้างๆน้องเสมอออ",
+            "ขอบคุณที่อ่านมาถึงตรงนี้นะ5555",
+            
+        ];
+        
+        // --- Thought View Functions ---
+        
+        // Create floating particles
+        function createParticle() {
+            const particles = ['✨', '💫', '⭐', '🌟', '💜', '💙', '🤍'];
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.textContent = particles[Math.floor(Math.random() * particles.length)];
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 8 + 's';
+            particle.style.animationDuration = (8 + Math.random() * 4) + 's';
+            
+            particlesContainer.appendChild(particle);
+            
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, 12000);
+        }
+
+        // Create heart particles for special moments
+        function createHeartParticle(x, y) {
+            const hearts = ['💜', '💖', '💕', '💗'];
+            const heart = document.createElement('div');
+            heart.className = 'heart-particle';
+            heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+            heart.style.left = (x || Math.random() * 100) + '%';
+            heart.style.top = (y || 80) + '%';
+            
+            heartContainer.appendChild(heart);
+            
+            setTimeout(() => {
+                if (heart.parentNode) {
+                    heart.parentNode.removeChild(heart);
+                }
+            }, 3000);
+        }
+
+        // Typewriter effect for thoughts
+        function typewriterEffect(text, element, callback) {
+            element.textContent = '';
+            element.classList.add('typewriter');
+            
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    element.textContent += text.charAt(i);
+                    i++;
+                    typewriterTimeout = setTimeout(type, 60 + Math.random() * 40);
+                } else {
+                    element.classList.add('no-caret');
+                    if (callback) callback();
+                }
+            }
+            type();
+        }
+
+        // Display current thought
+        function displayThought(index) {
+            if (index >= thoughtMessages.length) {
+                // All thoughts displayed, show continue button
+                continueButton.style.opacity = '1';
+                continueButton.style.transform = 'scale(1)';
+                continueButton.style.pointerEvents = 'auto';
+                return;
+            }
+
+            const message = thoughtMessages[index];
+            
+            if (typewriterTimeout) {
+                clearTimeout(typewriterTimeout);
+            }
+            
+            thoughtText.classList.add('fade-in-thought');
+            
+            if (index === 1 || index === 3) {
+                setTimeout(() => {
+                    thoughtText.classList.add('breathing');
+                }, 1000);
+                
+                setTimeout(() => {
+                    for (let i = 0; i < 3; i++) {
+                        setTimeout(() => {
+                            createHeartParticle(30 + Math.random() * 40, 60 + Math.random() * 20); // <--- [แก้ไข] เปิดใช้งานเอฟเฟคหัวใจ
+                        }, i * 500);
+                    }
+                }, 1500);
+            }
+            
+            if (index === thoughtMessages.length - 1) {
+                setTimeout(() => {
+                    thoughtText.classList.add('soft-glow');
+                }, 1000);
+            }
+            
+            setTimeout(() => {
+                typewriterEffect(message, thoughtText, () => {
+                    if (index < thoughtMessages.length - 1) {
+                        setTimeout(() => {
+                            autoNextThought();
+                        }, 1400);
+                    } else {
+                        setTimeout(() => {
+                            continueButton.style.opacity = '1';
+                            continueButton.style.transform = 'scale(1)';
+                            continueButton.style.pointerEvents = 'auto';
+                        }, 1000);
+                    }
+                });
+            }, 500);
+        }
+
+        // Auto advance to next thought
+        function autoNextThought() {
+            if (currentThought < thoughtMessages.length - 1) {
+                thoughtText.classList.remove('fade-in-thought', 'breathing', 'soft-glow', 'typewriter', 'no-caret');
+                thoughtText.classList.add('fade-out-thought');
+                
+                setTimeout(() => {
+                    thoughtText.classList.remove('fade-out-thought');
+                    currentThought++;
+                    displayThought(currentThought);
+                }, 800);
+            }
+        }
+
+        // Initialize thought view
+        function initializeThoughts() {
+            currentThought = 0;
+            thoughtText.classList.remove('fade-in-thought', 'fade-out-thought', 'breathing', 'soft-glow', 'typewriter', 'no-caret');
+            thoughtText.textContent = '';
+            
+            continueButton.style.opacity = '0';
+            continueButton.style.transform = 'scale(0.8)';
+            continueButton.style.pointerEvents = 'none';
+            
+            const particleInterval = setInterval(() => {
+                if (!document.getElementById('thought-view')) {
+                    clearInterval(particleInterval);
+                    return;
+                }
+                createParticle(); // <--- [แก้ไข] เปิดใช้งานเอฟเฟคอิโมจิลอย
+            }, 1500);
+            
+            setTimeout(() => {
+                displayThought(0);
+            }, 1000);
+        }
+
+        /**
+         * Function to handle transitions that redirect to another page
+         * @param {string} url - The URL to redirect to
+         */
+        function transitionToView(url) {
+            transitionOverlay.style.opacity = '1';
+            setTimeout(() => {
+                window.location.href = url;
+            }, 800);
+        }
+        
+        // Return to start screen from thoughts
+        function returnToStart() {
+            isThinking = false;
+            if (typewriterTimeout) {
+                clearTimeout(typewriterTimeout);
+            }
+            
+            // --- [แก้ไข] หยุดเพลงเมื่อเปลี่ยนหน้า ---
+            if (bgMusic) {
+                bgMusic.pause();
+                bgMusic.currentTime = 0; // รีเซ็ตเพลง (เผื่อกลับมาหน้านี้อีก)
+            }
+            // --- [สิ้นสุดการแก้ไข] ---
+
+            transitionToView('index.html');
+        }
+
+        // --- Event Listeners ---
+
+        continueButton.addEventListener('click', () => {
+            returnToStart();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (!isThinking) return;
+            
+            if (e.code === 'Escape') {
+                e.preventDefault();
+                returnToStart();
+            }
+        });
+
+        // --- [เพิ่ม] Event Listener สำหรับปุ่มเริ่ม (iOS Fix) ---
+        startThoughtButton.addEventListener('click', () => {
+            // 1. ซ่อน Modal
+            startModal.style.opacity = '0';
+            startModal.style.pointerEvents = 'none';
+
+            // 2. เริ่มเล่นเพลง (นี่คือ user interaction ที่ iOS ต้องการ)
+            if (bgMusic) {
+                bgMusic.volume = 0.6; // ตั้งค่าความดัง 60%
+                const playPromise = bgMusic.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.warn("Autoplay ถูกบล็อกโดยเบราว์เซอร์:", error);
+                    });
+                }
+            }
+
+            // 3. เริ่มลำดับความคิด
+            initializeThoughts();
+            isThinking = true;
+        });
+        // --- [สิ้นสุดส่วนที่เพิ่ม] ---
+
+        // --- [แก้ไข] แก้ไข window.onload ---
+        window.addEventListener('load', () => {
+            transitionOverlay.style.opacity = '1';
+            
+            // ❌ เราจะไม่เริ่มเล่นเพลง หรือ เริ่มแอนิเมชัน ตรงนี้อีกต่อไป
+            // ❌ (ย้ายโค้ดไปไว้ใน startThoughtButton.addEventListener)
+
+            // ทำให้หน้าจอดำจางหายไป (เพื่อโชว์ปุ่ม "กดเพื่ออ่าน")
+            setTimeout(() => {
+                transitionOverlay.style.opacity = '0';
+            }, 100); 
+        });
+        // --- [สิ้นสุดการแก้ไข] ---
+    </script>
+
+</body>
+</html>

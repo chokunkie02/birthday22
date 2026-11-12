@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>วิดีโอสุดพิเศษ</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #F8F6FF;
+            --primary-text: #8B5DFF;
+            --darker-text: #6A3ED4;
+            --shadow-color: rgba(106, 62, 212, 0.2);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Kanit', sans-serif;
+            margin: 0;
+            padding: 2rem; 
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            opacity: 0; 
+            animation: fadeInPage 1.5s ease-in-out forwards;
+            
+            /* (แก้ไข) เพิ่มพื้นที่ด้านล่าง 10rem (160px) */
+            padding-bottom: 10rem;
+        }
+        
+        @keyframes fadeInPage {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Overlay สำหรับการเปลี่ยนหน้า */
+        #transition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 9999;
+            pointer-events: none;
+            transition: opacity 1.5s ease-in-out, visibility 1.5s ease-in-out;
+        }
+        
+        #transition-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* --- Layout หลัก (วิดีโอซ้าย + ข้อความขวา) --- */
+        .main-layout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3rem;
+            max-width: 1000px;
+            width: 100%;
+        }
+        
+        .description-container {
+            flex-basis: 50%;
+        }
+        
+        .description-container h1 {
+            color: var(--darker-text);
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-top: 0;
+        }
+        
+        .description-container p {
+            color: #4A5568;
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+        
+        /* --- กรอบวิดีโอ (ซ้าย) --- */
+        .video-container {
+            flex-basis: 50%;
+            max-width: 400px; 
+            width: 100%;
+        }
+
+        .video-responsive-wrapper {
+            position: relative;
+            height: 0;
+            overflow: hidden;
+            border-radius: 1rem;
+            background: #000;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            padding-bottom: 177.77%; /* 16:9 แนวตั้ง */
+        }
+
+        .video-responsive-wrapper video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+            border-radius: 1rem;
+            object-fit: cover;
+        }
+        
+        /* --- ปุ่มถัดไป (แก้ไข) --- */
+        .next-button-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem; /* (แก้ไข) ย้ายไปมุมขวาล่าง */
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .next-button-container.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .next-button {
+            background-color: var(--primary-text);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(139, 93, 255, 0.4);
+            transition: all 0.3s ease;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .next-button:hover {
+            background-color: var(--darker-text);
+            transform: scale(1.05);
+        }
+
+        /* --- Responsive สำหรับมือถือ --- */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+                padding-bottom: 10rem; /* (แก้ไข) เพิ่มพื้นที่ด้านล่างในมือถือด้วย */
+                display: block; 
+            }
+            
+            .main-layout {
+                flex-direction: column;
+                gap: 2rem;
+            }
+            
+            .video-container {
+                max-width: 300px; 
+                margin: 0 auto;
+            }
+            
+            .description-container h1 {
+                font-size: 1.8rem;
+                text-align: center;
+            }
+            
+            .description-container p {
+                font-size: 1rem;
+                text-align: center;
+            }
+            
+            /* (แก้ไข) ลบ CSS ที่ทำให้ปุ่มขยายเต็มจอออก */
+            /* ปุ่มจะใช้สไตล์ .next-button-container (มุมขวาล่าง) ตามปกติ */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="transition-overlay"></div>
+
+    <div class="main-layout">
+        <div class="video-container">
+            <div class="video-responsive-wrapper">
+                <video controls autoplay muted loop playsinline>
+                    <source src="https://github.com/chokunkie02/Ketsari/releases/download/video/lv_0_20251030094306_2.mp4" type="video/mp4">
+                    เบราว์เซอร์ของคุณไม่รองรับแท็กวิดีโอ
+                </video>
+            </div>
+        </div>
+        
+        <div class="description-container">
+            <h1>วิดิโอสุดพิเศษ มอบให้คนพิเศษ</h1>
+            <p>
+                 อย่าลืมเปิดเสียงด้วยย อันนี้พี่ทำไว้ตอนประมาณเดือนกันยานู้นน ที่จริงในคลิปพูดไว้ด้วยแต่เผลอตัดออกไป เอากลับมาก็ลำบากละ565655
+                ก็ทำช่วงว่างๆพอดี แต่ก็ทำเอาตอนตี1กว่าๆ ละเสร็จตอนประมาณตี4อะ56555 หวังว่าน้องจะชอบนะะ ตอนแรกมันพังด้วยตามในคลิป 
+                คือพี่พันสายแน่นไป ทีนี้ต้องไล่สายใหม่ที่ละจุดว่ามันพังจุดไหนละคลายออกมาแล้วประกอบใหม่
+                แต่สุดท้ายพี่ก็แก้ได้แล้วนะ ไม่รู้ว่าตอนส่งไปถึงมันจะพังอีกไหม ก็ลองกดๆดูนะ ตั้งใจทำให้เลยนะเนี่ยยน เสียงอาจมีพัดลมดังหน่อยย ก็อัดคลิปครั้งแรกเลยเนี่ย66555
+                อย่าพึ่งกดถัดไปน้าา ดูคลิปให้จบก่อนน
+            </p>
+        </div>
+    </div>
+
+    <div class="next-button-container" id="nextButtonContainer">
+        <button class="next-button" onclick="goToNext()">
+            ถัดไป
+        </button>
+    </div>
+
+    <script>
+        // ฟังก์ชันสำหรับ Fade-out และเปลี่ยนหน้า
+        function goToNext() {
+            const overlay = document.getElementById('transition-overlay');
+            if (overlay) {
+                overlay.classList.add('visible');
+            }
+            
+            // รอ 1.5 วินาที ให้เอฟเฟกต์ Fade-out ทำงานเสร็จ
+            setTimeout(() => {
+                window.location.href = 'page2.html'; // ไปยังหน้าที่ 2
+            }, 1500); 
+        }
+
+        // ตั้งเวลา 10 วินาที (10000ms) ให้ปุ่มปรากฏขึ้น
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const nextButtonContainer = document.getElementById('nextButtonContainer');
+                if (nextButtonContainer) {
+                    nextButtonContainer.classList.add('visible');
+                }
+            }, 10000); // 10 วินาที
+        });
+    </script>
+
+</body>
+</html>
