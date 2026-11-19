@@ -2,855 +2,778 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Happy Birthday!</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&family=Mali:wght@400;500;600&family=Caveat:wght@500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="theme.css">
-    <link rel="stylesheet" href="scrapbook.css">
-    <script src="scrapbook.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&family=Mali:wght@400;500;600&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme.css?v=3">
+    <link rel="stylesheet" href="collage.css?v=4">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <script src="music.js?v=4"></script>
+    <script src="collage.js?v=3"></script>
+    <script src="bouquet.js?v=6"></script>
     <style>
-        /* --- General Styles --- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        html {
-            font-size: 16px;
-        }
-        body {
-            overflow: hidden;
-            background-color: var(--bg-color);
-            font-family: 'Kanit', sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+        body { font-family: 'Kanit', sans-serif; background: var(--bg-color); -webkit-tap-highlight-color: transparent;
+               user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }   /* ปัด/ลากแล้วไม่เลือกข้อความ */
+        img { -webkit-user-drag: none; }
+        input { user-select: text; -webkit-user-select: text; }
+        .cg-tag { white-space: nowrap; }
+        button { font: inherit; }
 
-        /* --- Page & Transition Styles --- */
-        .page-container {
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            opacity: 1;
-            transition: opacity 1.5s ease-in-out, visibility 1.5s;
-            visibility: visible;
-            padding: 1rem;
-        }
-        .page-container.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-        #fadeOverlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-color);   /* เปลี่ยนหน้าแบบจางเป็นสีขาว */
-            opacity: 0;
-            z-index: 9999;
-            pointer-events: none;
-            transition: opacity 1.5s ease-in-out;
-        }
-        #fadeOverlay.visible {
-            opacity: 1;
-        }
-        
-        /* --- Gate & Countdown Page --- */
-        #page-gate, #page-countdown {
-            background-color: var(--bg-color);
-        }
-        .pin-input {
-            width: 80px; height: 60px; text-align: center; font-size: 1.5rem;
-            border: 2px solid var(--accent-color); border-radius: 0.5rem; margin: 0 0.25rem;
-            background-color: var(--surface-color); color: var(--text-color);
-        }
-        .pin-input:focus {
-            outline: none; border-color: var(--heading-color);
-            box-shadow: 0 0 0 3px rgba(176, 137, 104, 0.3);
-        }
-        #hintModal { background-color: rgba(255, 255, 255, 0.75); }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
-            20%, 40%, 60%, 80% { transform: translateX(10px); }
-        }
-        .shake { animation: shake 0.5s ease-in-out; }
+        /* คำใบ้ */
+        .modal { position: fixed; inset: 0; z-index: 200; display: none; align-items: center; justify-content: center; background: rgba(255, 255, 255, .72); }
+        .modal.is-open { display: flex; }
 
-        /* --- Birthday Page --- */
-        #page-birthday {
-            background-color: var(--bg-color);
-        }
-        #page-birthday .container { 
-            text-align: center; position: relative; z-index: 10; opacity: 0; 
-            width: 100%; max-width: 900px;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            animation: fadeInUp 2s ease-out 0.5s forwards;
-        }
-        @keyframes fadeInUp {
-            0% { opacity: 0; transform: translateY(40px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        .happy-text, .birthday-text { color: var(--heading-color); line-height: 1; min-height: 1em; }
-        .happy-text { font-size: 44px; }
-        .birthday-text { font-size: 52px; margin-top: -4px; }
-        .sb-card--cake { animation: none; padding: 26px 18px 20px; }
-        .cake-container { position: relative; margin: 0 auto; opacity: 0; height: 180px; width: 100%; max-width: 240px; overflow: hidden; animation: scaleIn 1s ease-out 2s forwards; }
-        @keyframes scaleIn { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
-        .cake { width: 100%; position: absolute; bottom: 20px; }
-        .bottom-layer, .top-layer, .middle-layer { height: 48px; width: 144px; position: relative; margin: auto; background-repeat: repeat; background-size: 100% 100%, 36px 60px; background-position: 18px 0; background-image: linear-gradient( transparent 30px, var(--surface-color) 30px, var(--surface-color) 36px, transparent 36px ), radial-gradient(circle at 18px 3px, var(--accent-color) 18px, var(--surface-color) 19px); }
-        .middle-layer { transform: scale(0.85); top: 43px; animation: rise-1 2s forwards; }
-        @keyframes rise-1 { 100% { top: 5px; } }
-        .top-layer { transform: scale(0.7); top: 86px; animation: rise-2 2s 2s forwards; }
-        @keyframes rise-2 { 100% { top: 16px; } }
-        .candle { background: repeating-linear-gradient( 45deg, var(--accent-color) 0, var(--accent-color) 4px, var(--surface-color) 4px, var(--surface-color) 8px ); height: 27px; width: 9px; position: absolute; margin: auto; left: 0; right: 0; bottom: 0; animation: rise-3 1s 4s forwards; }
-        @keyframes rise-3 { 100% { bottom: 121px; } }
-        .candle:after { content: ""; position: absolute; height: 10px; width: 10px; background-color: var(--accent-color); border-radius: 0 50% 50% 50%; transform: scale(0) rotate(45deg); bottom: 30px; left: -0.5px; animation: flame 1.5s 5s forwards; transition: all 1.2s ease-out; }
-        @keyframes flame { 100% { transform: scale(1) rotate(45deg); } }
-        .candle.blown-out:after { transform: scale(0) rotate(45deg) !important; opacity: 0; }
-        .candle:before { content: ""; position: absolute; width: 6px; height: 11px; background: var(--accent-color); border-radius: 50%; opacity: 0; filter: blur(3px); bottom: 34px; left: 50%; transform: translateX(-50%); }
-        .candle.blown-out:before { animation: smokePuff 2.5s ease-out forwards; }
-        @keyframes smokePuff { 0% { opacity: 0.6; transform: translateX(-50%) translateY(0) scale(0.5); } 100% { opacity: 0; transform: translateX(-50%) translateY(-30px) scale(1.5); } }
-        .action-button { min-width: 150px; margin-top: 22px; position: relative; z-index: 6; opacity: 0; pointer-events: none; transform: translateY(16px); transition: opacity .8s ease, transform .8s ease; }
-        .action-button.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
-        .action-button.visible:active { transform: scale(.95) rotate(-1deg); }
-        .wishes, .thai-message { color: var(--text-color); }
-        .wishes { font-size: 22px; color: var(--accent-color); opacity: 0; margin-top: 4px; animation: fadeIn 1s ease-out 2.5s forwards; }
-        .thai-message { font-size: 18px; line-height: 1.5; opacity: 0; min-height: 1.5em; animation: fadeIn 1s ease-out 3s forwards; }
-        @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
-        
-        /* --- Countdown & Start Page Text Color --- */
-        #page-countdown h1, #page-start h1 {
-            color: var(--heading-color);
-        }
-        #page-countdown h1 { font-size: 24px; font-weight: 500; min-height: 1.5em; }
-
-        /* --- Gate Page (scrapbook) --- */
-        #page-gate h1 {
-            color: var(--heading-color);
-            font-size: 22px;
-            font-weight: 500;
-            line-height: 1.5;
-            margin: 2px 0 18px;
-        }
-        #page-gate .sb-pin {
-            width: 190px;
-            height: 52px;
-            font-size: 28px;          /* >= 16px กัน iPhone ซูมตอนแตะช่อง */
-            letter-spacing: 0.55em;
-            text-indent: 0.55em;
-            text-align: center;
-            color: var(--heading-color);
-            background: transparent;
-            border: none;
-            border-bottom: 1.5px dashed var(--accent-color);
-            border-radius: 0;
-            outline: none;
-        }
-        #page-gate .sb-pin::placeholder { color: var(--accent-soft); }
-        #page-gate .sb-pin:focus { border-bottom-style: solid; }
-        #page-gate .sb-actions {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 22px;
-        }
-        
-        /* --- Responsive Adjustments --- */
-        @media (max-width: 480px) {
-            .balloon-container { display: none; } 
-        }
-
-        @media (min-width: 768px) and (orientation: landscape), (min-width: 1024px) {
-            #page-birthday .container {
-                transform: scale(0.75); 
-            }
-        }
+        /* ค่อยๆ จางเป็นขาวตอนไปหน้าดอกไม้ */
+        #whiteout { position: fixed; inset: 0; z-index: 300; background: #fff; opacity: 0; pointer-events: none; transition: opacity 1.6s ease; }
+        #whiteout.is-on { opacity: 1; }
     </style>
 </head>
 <body>
-    <div id="fadeOverlay"></div>
 
-    <div id="page-countdown" class="page-container hidden sb-page">
-        <div class="sb-collage sb-collage--center">
-            <div class="sb-tape sb-tape--top"></div>
-            <div class="sb-card" style="max-width: 260px;">
-                <div class="sb-tape sb-tape--piece"></div>
-                <h1 id="countdownText" class="sb-hand"></h1>
+    <!-- ปุ่มเพลง (โผล่หลังแตะครั้งแรก) -->
+    <button id="musicBtn" aria-label="เปิด/ปิดเพลง">
+        <span class="cg-mount cg-tear" data-tear="4"><span class="note">♫</span></span>
+    </button>
+
+    <!-- ================= ฉาก 1: ใส่รหัส ================= -->
+    <section id="scene-gate" class="scene is-active">
+      <div class="cg-stage" id="gateStage">
+        <div class="cg-canvas">
+
+            <!-- ชั้นล่างสุด: กระดาษรองเค้ก + กระดาษคราฟต์ -->
+            <div class="cg-piece" data-o="1" style="--r:0deg; left:-70px; top:-60px; width:210px; height:210px;">
+                <div class="cg-doily" style="width:100%; height:100%;"></div>
             </div>
-            <div class="sb-tape sb-tape--bottom"></div>
+            <div class="cg-piece cg-lift" data-o="2" style="--r:-8deg; left:172px; top:34px; width:230px; height:160px;">
+                <div class="cg-kraft cg-grain cg-torn-all" style="width:100%; height:100%;"></div>
+            </div>
+
+            <!-- รูปหลัก: โพลารอยด์ -->
+            <div class="cg-piece cg-shadow cg-polaroid" data-o="3" style="--r:-6deg; left:20px; top:64px; width:172px; height:212px;">
+                <div class="cg-photo" data-label="รูปเรา ♡"><img src="photos/g1.jpg" alt=""></div>
+                <div class="cg-caption">22.11 <svg viewBox="0 0 34 30" width="15" height="13" style="vertical-align:-2px" aria-hidden="true"><path d="M17 28C3 18 0 10 5 5C9 1 15 3 17 8C19 3 25 1 29 5C34 10 31 18 17 28Z" fill="#C9A27E"/></svg></div>
+                <div class="cg-tape cg-tape--cocoa" style="width:64px; top:-9px; left:54px; transform:rotate(-4deg);"></div>
+            </div>
+
+            <!-- แถบรูปตู้สติกเกอร์ (วางบนกระดาษขาวฉีก) -->
+            <div class="cg-piece cg-lift" data-o="4" style="--r:2deg; left:224px; top:76px; width:110px; height:268px;">
+                <div class="cg-mount cg-tear cg-grain" data-tear="8" style="width:100%; height:100%;"></div>
+            </div>
+            <div class="cg-piece cg-shadow cg-booth" data-o="4" style="--r:7deg; left:236px; top:88px; width:84px;">
+                <div class="cg-photo" data-label="us" style="height:66px;"><img src="photos/g2.jpg" alt=""></div>
+                <div class="cg-photo" data-label="us" style="height:66px;"><img src="photos/g3.jpg" alt=""></div>
+                <div class="cg-photo" data-label="us" style="height:66px;"><img src="photos/g4.jpg" alt=""></div>
+                <div class="cg-tape" style="width:52px; top:-8px; left:16px; transform:rotate(9deg);"></div>
+            </div>
+
+            <!-- สติกเกอร์อีโมจิที่เธอชอบใช้ -->
+            <div class="cg-piece" data-o="5" style="--r:-12deg; left:158px; top:236px;"><span class="cg-emoji cg-bob" style="font-size:40px;">🧸</span></div>
+            <div class="cg-piece" data-o="5" style="--r:10deg; left:196px; top:30px;"><svg class="cg-heart " viewBox="-4 -4 42 38" width="34" height="31" aria-hidden="true"><path d="M17 28C3 18 0 10 5 5C9 1 15 3 17 8C19 3 25 1 29 5C34 10 31 18 17 28Z" fill="#8B5E3C" stroke="#FFFFFF" stroke-width="4.5" paint-order="stroke" stroke-linejoin="round"/><path d="M9 9.5c1.5-2.5 4.5-2.5 6 0" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+
+            <!-- หัวข้อ: ตัวอักษรตัดจากนิตยสาร + ลายมือ -->
+            <div class="cg-piece cg-lift" data-o="6" style="--r:-5deg; left:22px; top:300px; width:250px; font-size:30px;">
+                <span class="cg-cut cg-tear" data-tear="3" style="background:#E7D3BD; color:#4A3020; font-family:Georgia,serif;">H</span><span class="cg-cut cg-tear" data-tear="3" style="background:#2B2522; color:#FFF; font-family:Impact,'Arial Black',sans-serif;">A</span><span class="cg-cut cg-tear" data-tear="3" style="background:#F6CAD6; color:#5A2A35; font-family:'Courier New',monospace;">P</span><span class="cg-cut cg-tear" data-tear="3" style="background:#FFF; color:#6B4A32; font-family:Georgia,serif; font-style:italic;">P</span><span class="cg-cut cg-tear" data-tear="3" style="background:#C9D8BE; color:#24361E; font-family:Arial,sans-serif;">Y</span>
+            </div>
+            <div class="cg-piece cg-hand" data-o="7" style="--r:-4deg; left:118px; top:346px; font-size:44px; color:#6B4A32; line-height:1;">birthday</div>
+            <div class="cg-piece cg-hand" data-o="8" style="--r:-8deg; left:292px; top:340px; font-size:20px; color:#A0704C; line-height:1.1; text-align:center;">luv me,<br>luv u 🌷</div>
+
+            <!-- ตั๋ว = ช่องใส่รหัส -->
+            <div class="cg-piece cg-lift" id="pin-container" data-o="9" style="--r:-3deg; left:24px; top:414px; width:326px;">
+                <div class="cg-ticket cg-grain" style="position:relative;">
+                    <div class="cg-ticket-label">ADMIT ONE · NO.</div>
+                    <input type="text" id="passwordInput" class="cg-ticket-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="รหัสผ่าน 4 หลัก" placeholder="____">
+                    <div class="cg-thai" style="font-size:13px; color:#A0704C; margin-top:4px;">ใส่รหัส 4 หลักเพื่อเข้าไปนะ <svg viewBox="0 0 34 30" width="13" height="11" style="vertical-align:-2px" aria-hidden="true"><path d="M17 28C3 18 0 10 5 5C9 1 15 3 17 8C19 3 25 1 29 5C34 10 31 18 17 28Z" fill="#A0704C"/></svg></div>
+                    <button id="confirmButton" class="cg-stamp" aria-label="ยืนยันรหัส">OK</button>
+                </div>
+            </div>
+
+            <!-- ป้ายแขวน = คำใบ้ -->
+            <div class="cg-piece cg-lift" data-o="10" style="--r:9deg; left:236px; top:540px;">
+                <button id="hintButton" class="cg-tag">คำใบ้?</button>
+            </div>
+
+            <!-- กระดาษสมุดฉีก -->
+            <div class="cg-piece cg-lift" data-o="11" style="--r:3deg; left:30px; top:590px; width:236px; height:148px;">
+                <div class="cg-notebook cg-grain cg-torn-top" style="position:relative; width:100%; height:100%; padding:30px 16px 0 38px;">
+                    <div class="cg-thai" style="font-size:15px; line-height:26px; color:#4A3B32; white-space:nowrap;">วันนี้วันอะไรกันเนี่ยยย<br>อยากรู้ใช่ป่าวว<br>ใส่รหัสให้ถูกก่อนน<br>เดี๋ยวก็จะรู้เองง</div>
+                </div>
+            </div>
+
+            <!-- รูปเล็ก (อินสแตกซ์) ทับมุมกระดาษ -->
+            <div class="cg-piece cg-lift" data-o="12" style="--r:8deg; left:246px; top:648px; width:112px; height:132px;">
+                <div class="cg-mount cg-tear" data-tear="6" style="width:100%; height:100%; --m:8px;">
+                    <div class="cg-photo" data-label="รูปเรา"><img src="photos/g5.jpg" alt=""></div>
+                </div>
+                <div class="cg-tape" style="width:46px; top:-8px; left:34px; transform:rotate(-6deg);"></div>
+            </div>
+
+            <!-- ดอกไม้ทับ -->
+            <div class="cg-piece cg-lift" data-o="13" style="--r:-18deg; left:-6px; top:676px; width:80px; height:118px;">
+                <svg viewBox="0 0 60 90" width="80" height="118"><path d="M30 90C28 70 32 50 29 30" stroke="#8C7051" stroke-width="1.2" fill="none"/><path d="M30 62C20 56 14 58 10 52" stroke="#8C7051" fill="none"/><ellipse cx="11" cy="51" rx="6" ry="3" fill="#A8A07A" transform="rotate(-30 11 51)"/><path d="M29 74C38 70 42 72 47 66" stroke="#8C7051" fill="none"/><ellipse cx="47" cy="65" rx="6" ry="3" fill="#B5AD86" transform="rotate(-40 47 65)"/><g fill="#E7B9A6" opacity=".92"><circle cx="29" cy="22" r="6"/><circle cx="22" cy="18" r="5"/><circle cx="36" cy="17" r="5"/><circle cx="29" cy="11" r="5"/></g><circle cx="29" cy="17" r="3" fill="#E8C770"/></svg>
+            </div>
+
+            <!-- ของประดับ: อีโมจิของเธอ + เทป -->
+            <div class="cg-piece" data-o="14" style="--r:14deg; left:306px; top:398px;"><span class="cg-emoji cg-bob" style="font-size:32px;">🪄</span></div>
+            <div class="cg-piece" data-o="14" style="--r:-8deg; left:6px; top:392px;"><svg class="cg-heart " viewBox="-4 -4 42 38" width="32" height="29" aria-hidden="true"><path d="M17 28C3 18 0 10 5 5C9 1 15 3 17 8C19 3 25 1 29 5C34 10 31 18 17 28Z" fill="#D2AE88" stroke="#FFFFFF" stroke-width="4.5" paint-order="stroke" stroke-linejoin="round"/><path d="M9 9.5c1.5-2.5 4.5-2.5 6 0" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+            <div class="cg-piece" data-o="15" style="--r:-35deg; left:286px; top:772px; width:90px;">
+                <div class="cg-tape cg-tape--cocoa" style="position:relative; width:90px;"></div>
+            </div>
+            <div class="cg-piece" data-o="16" style="--r:6deg; left:150px; top:736px;"><span class="cg-emoji cg-bob" style="font-size:36px;">🐈‍⬛</span></div>
+            <div class="cg-piece" data-o="16" style="--r:-10deg; left:196px; top:560px;"><span class="cg-emoji" style="font-size:26px;">🫶🏻</span></div>
+            <div class="cg-piece" data-o="16" style="--r:20deg; left:84px; top:748px;"><span class="cg-emoji" style="font-size:24px;">🍃</span></div>
         </div>
-    </div>
+      </div>
+    </section>
 
-    <div id="page-birthday" class="page-container hidden sb-page">
-        <canvas id="fireworks-canvas" style="position:absolute; top:0; left:0; z-index: 5; pointer-events: none;"></canvas>
-        <div class="sb-collage sb-collage--center">
-            <div class="sb-tape sb-tape--top"></div>
+    <!-- ================= ฉาก 2: นับถอยหลัง ================= -->
+    <section id="scene-countdown" class="scene">
+      <div class="cg-stage" id="countStage">
+        <div class="cg-canvas">
+            <div class="cg-piece" data-o="1" style="--r:0deg; left:-80px; top:-70px; width:220px; height:220px;">
+                <div class="cg-doily" style="width:100%; height:100%;"></div>
+            </div>
+            <div class="cg-piece cg-lift" data-o="2" style="--r:-8deg; left:40px; top:250px; width:300px; height:300px;">
+                <div class="cg-tear cg-grain" data-tear="10" style="width:100%; height:100%; background-color:#F1E6D8;"></div>
+            </div>
+            <div class="cg-piece cg-lift" data-o="3" style="--r:6deg; left:210px; top:96px; width:190px; height:150px;">
+                <div class="cg-kraft cg-grain cg-tear" data-tear="9" style="width:100%; height:100%;"></div>
+            </div>
+            <div class="cg-piece cg-hand" data-o="4" style="--r:-7deg; left:40px; top:132px; font-size:64px; color:#6B4A32; line-height:1;">ready?</div>
+            <div class="cg-piece cg-thai" data-o="5" style="--r:-4deg; left:60px; top:206px; font-size:18px; color:#A0704C;">พร้อมนะ... นับถอยหลังกัน</div>
 
-            <div class="sb-stickers" aria-hidden="true">
-                <span class="sb-sticker" data-kind="heart"   data-x="14" data-y="7"  data-size="40" data-rotate="-12" data-color="#EDB8C4"></span>
-                <span class="sb-sticker" data-kind="star"    data-x="84" data-y="8"  data-size="34" data-rotate="14"  data-color="#F2CD6B"></span>
-                <span class="sb-sticker" data-kind="bow"     data-x="90" data-y="22" data-size="48" data-rotate="18"  data-color="#D9A0B0" data-front></span>
-                <span class="sb-sticker" data-kind="flower"  data-x="7"  data-y="30" data-size="36" data-rotate="0"   data-color="#BFD1B5" data-front></span>
-                <span class="sb-sticker" data-kind="button"  data-x="95" data-y="52" data-size="28" data-rotate="-8"  data-color="#DCC3A5"></span>
-                <span class="sb-sticker" data-kind="heart"   data-x="5"  data-y="60" data-size="30" data-rotate="10"  data-color="#C9A27E"></span>
-                <span class="sb-sticker" data-kind="star"    data-x="90" data-y="74" data-size="30" data-rotate="-16" data-color="#F2CD6B" data-front></span>
-                <span class="sb-sticker" data-kind="flower"  data-x="12" data-y="91" data-size="34" data-rotate="12"  data-color="#F2C6CF"></span>
-                <span class="sb-sticker" data-kind="button"  data-x="86" data-y="93" data-size="28" data-rotate="4"   data-color="#B9D3DB"></span>
-                <span class="sb-sticker" data-kind="sparkle" data-x="42" data-y="5"  data-size="14" data-color="#C9A27E"></span>
-                <span class="sb-sticker" data-kind="sparkle" data-x="64" data-y="7"  data-size="12" data-color="#C9A27E"></span>
-                <span class="sb-sticker" data-kind="sparkle" data-x="4"  data-y="45" data-size="12" data-color="#C9A27E"></span>
-                <span class="sb-sticker" data-kind="sparkle" data-x="96" data-y="38" data-size="12" data-color="#C9A27E"></span>
-                <span class="sb-sticker" data-kind="sparkle" data-x="38" data-y="95" data-size="12" data-color="#C9A27E"></span>
-                <span class="sb-sticker" data-kind="sparkle" data-x="62" data-y="94" data-size="14" data-color="#C9A27E"></span>
+            <!-- ตัวเลขหล่นลงมาซ้อนกันตรงนี้ -->
+            <div id="countStack" style="position:absolute; left:112px; top:300px; width:150px; height:190px;"></div>
+
+            <div class="cg-piece" data-o="6" style="--r:-12deg; left:300px; top:268px;"><span class="cg-emoji cg-bob" style="font-size:30px;">🧸</span></div>
+            <div class="cg-piece" data-o="6" style="--r:30deg; left:-20px; top:560px; width:120px;"><div class="cg-tape" style="position:relative; width:120px;"></div></div>
+            <div class="cg-piece cg-lift" data-o="7" style="--r:5deg; left:196px; top:548px; width:176px;">
+                <img src="photos/cutout-c1.png" alt="" style="width:100%; display:block;">
+            </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ฉาก 3: เค้ก (ปัดขึ้นเพื่อเป่า) ================= -->
+    <section id="scene-cake" class="scene">
+      <div class="cg-stage" id="cakeStage">
+        <div class="cg-canvas">
+            <div class="cg-piece" data-o="1" style="--r:0deg; left:222px; top:-54px; width:210px; height:210px;">
+                <div class="cg-doily" style="width:100%; height:100%;"></div>
+            </div>
+            <div class="cg-piece cg-lift" data-o="2" style="--r:-6deg; left:-34px; top:292px; width:300px; height:280px;">
+                <div class="cg-tear cg-grain" data-tear="9" style="width:100%; height:100%; background-color:#F1E6D8;"></div>
+            </div>
+            <div class="cg-piece cg-lift" data-o="3" style="--r:7deg; left:176px; top:586px; width:240px; height:210px;">
+                <div class="cg-kraft cg-grain cg-tear" data-tear="9" style="width:100%; height:100%;"></div>
             </div>
 
-            <div class="container">
-                <div class="sb-card sb-card--cake" data-sb-origin>
-                    <div class="sb-tape sb-tape--piece"></div>
-                    <div class="birthday-wrapper">
-                        <div class="happy-text sb-script"></div>
-                        <div class="birthday-text sb-script"></div>
+            <!-- รูปบนกระดาษขาวฉีก -->
+            <div class="cg-piece cg-lift" data-o="4" style="--r:7deg; left:226px; top:108px; width:128px; height:156px;">
+                <div class="cg-mount cg-tear" data-tear="6" style="width:100%; height:100%;">
+                    <div class="cg-photo" data-label="รูปเรา"><img src="photos/k1.jpg" alt=""></div>
+                </div>
+                <div class="cg-tape cg-tape--cocoa" style="width:54px; top:-8px; left:38px; transform:rotate(-5deg);"></div>
+            </div>
+            <div class="cg-piece cg-lift" data-o="5" style="--r:-8deg; left:14px; top:150px; width:110px; height:128px;">
+                <div class="cg-mount cg-tear" data-tear="6" style="width:100%; height:100%; --m:8px;">
+                    <div class="cg-photo" data-label="รูปเรา"><img src="photos/k2.jpg" alt=""></div>
+                </div>
+                <div class="cg-tape" style="width:46px; top:-8px; left:30px; transform:rotate(6deg);"></div>
+            </div>
+
+            <!-- หัวข้อ -->
+            <div class="cg-piece cg-hand" data-o="6" style="--r:-7deg; left:30px; top:52px; font-size:36px; color:#6B4A32;">make a</div>
+            <div class="cg-piece cg-lift" data-o="7" style="--r:-4deg; left:86px; top:88px; font-size:40px;">
+                <span class="cg-cut cg-tear" data-tear="3" style="background:#F6CAD6; color:#5A2A35; font-family:Georgia,serif;">W</span><span class="cg-cut cg-tear" data-tear="3" style="background:#FFFDF8; color:#8B5E3C; font-family:Georgia,serif; font-style:italic; padding:0 10px;">i</span><span class="cg-cut cg-tear" data-tear="3" style="background:#E7D3BD; color:#4A3020; font-family:'Courier New',monospace;">S</span><span class="cg-cut cg-tear" data-tear="3" style="background:#C9D8BE; color:#24361E; font-family:Arial,sans-serif;">H</span>
+            </div>
+            <div class="cg-piece" data-o="8" style="--r:12deg; left:178px; top:36px;"><span class="cg-emoji cg-bob" style="font-size:32px;">🎉</span></div>
+            <div class="cg-piece" data-o="8" style="--r:-10deg; left:150px; top:200px;"><svg class="cg-heart " viewBox="-4 -4 42 38" width="30" height="27" aria-hidden="true"><path d="M17 28C3 18 0 10 5 5C9 1 15 3 17 8C19 3 25 1 29 5C34 10 31 18 17 28Z" fill="#8B5E3C" stroke="#FFFFFF" stroke-width="4.5" paint-order="stroke" stroke-linejoin="round"/><path d="M9 9.5c1.5-2.5 4.5-2.5 6 0" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+
+            <!-- เค้ก: สติกเกอร์ไดคัท ขอบขาวตามรูปทรงเค้ก -->
+            <div class="cg-piece cg-lift" data-o="9" style="--r:-2deg; left:53px; top:288px; width:270px;">
+                <svg id="cakeSvg" viewBox="0 0 260 280" width="270" height="291" aria-label="เค้กวันเกิด" style="overflow:visible;"></svg>
+            </div>
+
+            <!-- สติกเกอร์ไดคัทตัวเธอ -->
+            <div class="cg-piece cg-lift" data-o="11" style="--r:-4deg; left:-4px; top:556px; width:96px;"><img src="photos/cutout-k3.png" alt="" style="width:100%; display:block;"></div>
+
+            <!-- คำแนะนำ: ปัดขึ้น -->
+            <div class="cg-piece" id="cakeHint" data-o="10" style="--r:-3deg; left:96px; top:600px; width:250px; text-align:center;">
+                <div><span class="cg-emoji cg-swipe-hint" style="font-size:30px;">☝🏻</span></div>
+                <div class="cg-hand" style="font-size:26px; color:#6B4A32; line-height:1.1;">ปัดขึ้นเพื่อเป่าเทียน ↑</div>
+            </div>
+
+            <div class="cg-piece" data-o="11" style="--r:-12deg; left:290px; top:516px;"><span class="cg-emoji cg-bob" style="font-size:34px;">🧸</span></div>
+            <div class="cg-piece" data-o="12" style="--r:10deg; left:70px; top:548px;"><span class="cg-emoji" style="font-size:28px;">🌷</span></div>
+            <div class="cg-piece" data-o="11" style="--r:-6deg; left:300px; top:290px;"><svg class="cg-heart " viewBox="-4 -4 42 38" width="28" height="25" aria-hidden="true"><path d="M17 28C3 18 0 10 5 5C9 1 15 3 17 8C19 3 25 1 29 5C34 10 31 18 17 28Z" fill="#D2AE88" stroke="#FFFFFF" stroke-width="4.5" paint-order="stroke" stroke-linejoin="round"/><path d="M9 9.5c1.5-2.5 4.5-2.5 6 0" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+
+            <!-- หลังเป่าเสร็จ -->
+            <div class="cg-reveal cg-lift" id="cakeWish" style="position:absolute; left:92px; top:604px; width:268px; height:84px; rotate:-3deg;">
+                <div class="cg-notebook cg-grain cg-torn-top" style="position:relative; width:100%; height:100%; padding:24px 14px 0 40px;">
+                    <div class="cg-thai" style="font-size:16px; line-height:26px; color:#4A3B32;">เย้~ ขอให้สมหวังทุกอย่างนะ</div>
+                </div>
+            </div>
+            <div class="cg-reveal cg-lift" id="cakeNext" style="position:absolute; left:160px; top:716px; rotate:5deg;">
+                <button id="toLetter" class="cg-tag">มีจดหมายด้วยนะ ✉︎</button>
+            </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ฉาก 4: จดหมาย (ลากตราประทับ → คลี่) ================= -->
+    <section id="scene-letter" class="scene">
+      <div class="cg-stage" id="letterStage">
+        <div class="cg-canvas">
+            <div class="cg-piece cg-lift" data-o="1" style="--r:-6deg; left:-40px; top:250px; width:340px; height:300px;">
+                <div class="cg-kraft cg-grain cg-tear" data-tear="9" style="width:100%; height:100%;"></div>
+            </div>
+            <div class="cg-piece" data-o="2" style="--r:0deg; left:-70px; top:640px; width:210px; height:210px;">
+                <div class="cg-doily" style="width:100%; height:100%;"></div>
+            </div>
+
+            <div class="cg-piece cg-lift" data-o="3" style="--r:-7deg; left:16px; top:52px; width:124px; height:150px;">
+                <div class="cg-mount cg-tear" data-tear="6" style="width:100%; height:100%;">
+                    <div class="cg-photo" data-label="รูปเรา"><img src="photos/l1.jpg" alt=""></div>
+                </div>
+                <div class="cg-tape cg-tape--cocoa" style="width:52px; top:-8px; left:36px; transform:rotate(-4deg);"></div>
+            </div>
+
+            <!-- แสตมป์ + ตราไปรษณีย์ -->
+            <div class="cg-piece cg-lift" data-o="4" style="--r:6deg; left:240px; top:64px; width:96px; height:116px;">
+                <div style="width:100%; height:100%; background:#D9B98F; border:6px dotted #FFFFFF; padding:6px;">
+                    <div style="width:100%; height:100%; background:#FFFEFB; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                        <span style="font-size:34px; line-height:1;">🐈‍⬛</span>
+                        <span style="font:700 11px 'Courier New',monospace; color:#A0704C; margin-top:4px;">22.11</span>
                     </div>
-                    <div class="cake-container">
-                        <div class="cake">
-                          <div class="candle"></div>
-                          <div class="top-layer"></div>
-                          <div class="middle-layer"></div>
-                          <div class="bottom-layer"></div>
-                        </div>
-                    </div>
-                    <div class="wishes sb-script"></div>
-                    <div class="thai-message sb-hand"></div>
                 </div>
-                <button class="action-button sb-btn sb-btn--fill" id="actionButton"></button>
+            </div>
+            <div class="cg-piece" data-o="5" style="--r:-14deg; left:196px; top:128px; width:84px; height:84px;">
+                <svg viewBox="0 0 84 84" width="84" height="84"><circle cx="42" cy="42" r="30" fill="none" stroke="rgba(120,85,60,.45)" stroke-width="2"/><circle cx="42" cy="42" r="24" fill="none" stroke="rgba(120,85,60,.3)" stroke-width="1"/><text x="42" y="40" text-anchor="middle" font-family="Courier New, monospace" font-size="9" font-weight="700" fill="rgba(120,85,60,.6)">HBD</text><text x="42" y="52" text-anchor="middle" font-family="Courier New, monospace" font-size="9" fill="rgba(120,85,60,.6)">22.11</text><path d="M66 34c6 -4 12 4 18 0M66 42c6 -4 12 4 18 0M66 50c6 -4 12 4 18 0" stroke="rgba(120,85,60,.4)" stroke-width="1.5" fill="none"/></svg>
             </div>
 
-            <div class="sb-tape sb-tape--bottom"></div>
-        </div>
-    </div>
+            <div class="cg-piece cg-hand" data-o="6" style="--r:-5deg; left:118px; top:206px; font-size:40px; color:#6B4A32;">for you <svg class="cg-heart" viewBox="-4 -4 42 38" width="34" height="31" style="vertical-align:-4px" aria-hidden="true"><path d="M17 28C3 18 0 10 5 5C9 1 15 3 17 8C19 3 25 1 29 5C34 10 31 18 17 28Z" fill="#8B5E3C" stroke="#FFFFFF" stroke-width="4.5" paint-order="stroke" stroke-linejoin="round"/></svg></div>
 
-    <div id="page-start" class="page-container hidden">
-        <div class="text-center">
-            <h1 class="text-4xl sm:text-5xl md:text-7xl font-bold mb-8">พร้อมไหม</h1>
-            <button id="readyButton" class="theme-button font-bold py-3 px-8 sm:py-4 sm:px-10 rounded-full text-lg sm:text-xl md:text-2xl active:scale-95 transition-all duration-200 shadow-lg">พร้อม</button>
-        </div>
-    </div>
-
-    <div id="page-gate" class="page-container sb-page">
-        <div class="sb-collage">
-            <div class="sb-tape sb-tape--top"></div>
-            <p class="sb-label sb-script">happy birthday</p>
-
-            <div class="sb-stickers" aria-hidden="true">
-                <span class="sb-sticker" data-kind="star"    data-x="12" data-y="10" data-size="36" data-rotate="-12" data-color="#F2CD6B"></span>
-                <span class="sb-sticker" data-kind="bow"     data-x="76" data-y="9"  data-size="50" data-rotate="10"  data-color="#D9A0B0"></span>
-                <span class="sb-sticker" data-kind="heart"   data-x="88" data-y="18" data-size="44" data-rotate="14"  data-color="#EDB8C4" data-front></span>
-                <span class="sb-sticker" data-kind="button"  data-x="93" data-y="48" data-size="30" data-rotate="-10" data-color="#DCC3A5"></span>
-                <span class="sb-sticker" data-kind="flower"  data-x="9"  data-y="57" data-size="40" data-rotate="0"   data-color="#BFD1B5" data-front></span>
-                <span class="sb-sticker" data-kind="star"    data-x="26" data-y="71" data-size="28" data-rotate="-18" data-color="#F2CD6B"></span>
-                <span class="sb-sticker" data-kind="heart"   data-x="76" data-y="70" data-size="42" data-rotate="16"  data-color="#C9A27E"></span>
-                <span class="sb-sticker" data-kind="flower"  data-x="50" data-y="80" data-size="36" data-rotate="10"  data-color="#F2C6CF"></span>
-                <span class="sb-sticker" data-kind="button"  data-x="15" data-y="88" data-size="30" data-rotate="6"   data-color="#B9D3DB"></span>
-                <span class="sb-sticker" data-kind="heart"   data-x="88" data-y="88" data-size="28" data-rotate="-6"  data-color="#F6D6DC"></span>
-                <span class="sb-sticker" data-kind="sparkle" data-x="34" data-y="9"  data-size="14" data-color="#C9A27E"></span>
-                <span class="sb-sticker" data-kind="sparkle" data-x="94" data-y="33" data-size="12" data-color="#C9A27E"></span>
-                <span class="sb-sticker" data-kind="sparkle" data-x="5"  data-y="38" data-size="12" data-color="#C9A27E"></span>
-                <span class="sb-sticker" data-kind="sparkle" data-x="56" data-y="66" data-size="14" data-color="#C9A27E"></span>
-                <span class="sb-sticker" data-kind="sparkle" data-x="36" data-y="93" data-size="12" data-color="#C9A27E"></span>
-                <span class="sb-sticker" data-kind="sparkle" data-x="66" data-y="91" data-size="14" data-color="#C9A27E"></span>
-            </div>
-
-            <div class="sb-card" data-sb-origin>
-                <div class="sb-tape sb-tape--piece"></div>
-                <p class="sb-script" style="font-size: 22px; color: var(--accent-color);">for you</p>
-                <h1 class="sb-hand">ถ้าพร้อมแล้วว<br>โปรดใส่รหัส</h1>
-                <div id="pin-container" class="flex justify-center">
-                    <input type="text" id="passwordInput" class="sb-pin sb-hand" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="รหัสผ่าน 4 หลัก" placeholder="····">
-                </div>
-                <div class="sb-actions">
-                    <button id="hintButton" class="sb-btn">คำใบ้จ้าาา</button>
-                    <button id="confirmButton" class="sb-btn sb-btn--fill">ยืนยัน</button>
+            <!-- ซองจดหมาย -->
+            <div class="cg-piece cg-lift" id="envPiece" data-o="7" style="--r:-3deg; left:37px; top:330px;">
+                <div class="env" id="env">
+                    <div class="env-back"></div>
+                    <div class="env-letter"></div>
+                    <div class="env-front"></div>
+                    <div class="env-flap"></div>
+                    <div class="seal" id="seal" role="button" aria-label="ลากตราประทับเพื่อเปิดซอง"><svg viewBox="0 0 34 30" width="26" height="23" aria-hidden="true"><path d="M17 28C3 18 0 10 5 5C9 1 15 3 17 8C19 3 25 1 29 5C34 10 31 18 17 28Z" fill="none" stroke="rgba(255,240,220,.75)" stroke-width="2.6"/></svg></div>
                 </div>
             </div>
 
-            <div class="sb-tape sb-tape--bottom"></div>
+            <div class="cg-piece" id="letterHint" data-o="8" style="--r:-2deg; left:44px; top:556px; width:290px; text-align:center;">
+                <div class="cg-hand" style="font-size:25px; color:#6B4A32; line-height:1.15;">ลากตราประทับออก<br>เพื่อเปิดซองนะ ✉︎</div>
+            </div>
+
+            <div class="cg-piece" data-o="9" style="--r:10deg; left:306px; top:292px;"><svg class="cg-heart cg-bob" viewBox="-4 -4 42 38" width="34" height="31" aria-hidden="true"><path d="M17 28C3 18 0 10 5 5C9 1 15 3 17 8C19 3 25 1 29 5C34 10 31 18 17 28Z" fill="#8B5E3C" stroke="#FFFFFF" stroke-width="4.5" paint-order="stroke" stroke-linejoin="round"/><path d="M9 9.5c1.5-2.5 4.5-2.5 6 0" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+            <div class="cg-piece" data-o="9" style="--r:-12deg; left:22px; top:286px;"><span class="cg-emoji" style="font-size:28px;">🪐</span></div>
+            <div class="cg-piece" data-o="9" style="--r:8deg; left:316px; top:556px;"><svg class="cg-heart " viewBox="-4 -4 42 38" width="30" height="27" aria-hidden="true"><path d="M17 28C3 18 0 10 5 5C9 1 15 3 17 8C19 3 25 1 29 5C34 10 31 18 17 28Z" fill="#D2AE88" stroke="#FFFFFF" stroke-width="4.5" paint-order="stroke" stroke-linejoin="round"/><path d="M9 9.5c1.5-2.5 4.5-2.5 6 0" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+
+            <div class="cg-piece cg-lift" data-o="10" style="--r:8deg; left:248px; top:640px; width:108px; height:128px;">
+                <div class="cg-mount cg-tear" data-tear="6" style="width:100%; height:100%; --m:8px;">
+                    <div class="cg-photo" data-label="รูปเรา"><img src="photos/l2.jpg" alt=""></div>
+                </div>
+                <div class="cg-tape" style="width:44px; top:-8px; left:32px; transform:rotate(-6deg);"></div>
+            </div>
+
+            <!-- สติกเกอร์ไดคัทตัวเธอ -->
+            <div class="cg-piece cg-lift" data-o="11" style="--r:-6deg; left:-2px; top:618px; width:132px;"><img src="photos/cutout-l3.png" alt="" style="width:100%; display:block;"></div>
+
+            <!-- จดหมายพับ 3 ทบ (เนื้อหาเติมจาก LETTER ด้านล่าง) -->
+            <div id="letterPaper">
+                <div class="cg-tape cg-tape--cocoa" style="width:72px; top:-6px; left:-16px; transform:rotate(-30deg); z-index:5;"></div>
+                <div class="cg-tape" style="width:64px; top:-6px; right:-14px; transform:rotate(26deg); z-index:5;"></div>
+                <div class="fold cg-torn-top" id="fold1"></div>
+                <div class="fold is-folded" id="fold2"></div>
+                <div class="fold is-folded" id="fold3" style="height:244px;"></div>
+                <div class="cg-hand" id="unfoldHint" style="position:absolute; left:0; right:0; text-align:center; font-size:22px; color:#A0704C; transition: top .8s, opacity .4s;">แตะเพื่อคลี่ต่อ ↓</div>
+            </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ฉาก 5: ช่อดอกไม้ ================= -->
+    <section id="scene-flowers" class="scene">
+      <div class="cg-stage" id="flowerStage">
+        <div class="cg-canvas">
+            <div class="cg-piece" data-o="1" style="--r:0deg; left:236px; top:-64px; width:210px; height:210px;">
+                <div class="cg-doily" style="width:100%; height:100%;"></div>
+            </div>
+            <div class="cg-piece cg-lift" data-o="2" style="--r:4deg; left:22px; top:150px; width:330px; height:520px;">
+                <div class="cg-tear cg-grain" data-tear="10" style="width:100%; height:100%; background-color:#F4EBDF;"></div>
+            </div>
+            <div class="cg-piece cg-lift" data-o="3" style="--r:-3deg; left:24px; top:34px; width:300px; height:98px;">
+                <div class="cg-notebook cg-grain cg-torn-top" style="position:relative; width:100%; height:100%; padding:26px 14px 0 40px;">
+                    <div class="cg-thai" style="font-size:19px; line-height:26px; color:#4A3B32;">สุขสันต์วันเกิดนะ <svg viewBox="0 0 34 30" width="17" height="15" style="vertical-align:-1px" aria-hidden="true"><path d="M17 28C3 18 0 10 5 5C9 1 15 3 17 8C19 3 25 1 29 5C34 10 31 18 17 28Z" fill="#8B5E3C"/></svg></div>
+                    <div class="cg-hand" style="font-size:22px; line-height:26px; color:#A0704C;">a bouquet for semon</div>
+                </div>
+                <div class="cg-tape" style="width:60px; top:-8px; left:120px; transform:rotate(-4deg);"></div>
+            </div>
+
+            <!-- ช่อดอกไม้ (วาดด้วย bouquet.js) -->
+            <div id="bouquet" role="img" aria-label="ช่อดอกไม้"></div>
+
+            <div class="cg-piece cg-lift" data-o="4" style="--r:-4deg; left:4px; top:536px; width:112px;">
+                <img src="photos/cutout-f1.png" alt="" style="width:100%; display:block;">
+            </div>
+            <div class="cg-piece" data-o="5" style="--r:-12deg; left:306px; top:600px;"><span class="cg-emoji cg-bob" style="font-size:30px;">🐇</span></div>
+
+            <div class="cg-reveal" id="flowerHint" style="position:absolute; left:222px; top:690px; rotate:-4deg;">
+                <div class="cg-hand" style="font-size:24px; color:#6B4A32; white-space:nowrap;">แตะดอกไม้ดูสิ ✿</div>
+            </div>
+            <div class="cg-reveal cg-lift" id="flowerAgain" style="position:absolute; left:230px; top:752px; rotate:5deg;">
+                <button id="replay" class="cg-tag">ดูอีกครั้ง ↺</button>
+            </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- คำใบ้ -->
+    <div id="hintModal" class="modal">
+        <div class="cg-lift" style="transform: rotate(2deg); position: relative;">
+            <div class="cg-tape cg-tape--cocoa" style="width:60px; top:-8px; left:50%; margin-left:-30px;"></div>
+            <div class="cg-mount cg-tear cg-grain" data-tear="6" style="--m: 0; width: 260px; padding: 30px 20px 22px; text-align: center;">
+                <p id="hintText" class="cg-thai" style="font-size: 20px; color: #4A3B32;"></p>
+                <button id="closeModalButton" class="cg-tag" style="margin-top: 16px;">ปิด</button>
+            </div>
         </div>
     </div>
 
-    <div id="hintModal" class="fixed inset-0 z-[10000] items-center justify-center hidden">
-        <div class="sb-card" style="max-width: 280px; margin: 0 24px; transform: rotate(1.5deg); animation: none;">
-            <div class="sb-tape sb-tape--piece"></div>
-            <p id="hintText" class="sb-hand" style="font-size: 22px; color: var(--heading-color);"></p>
-            <button id="closeModalButton" class="sb-btn" style="margin-top: 18px;">ปิด</button>
-        </div>
-    </div>
-
+    <div id="whiteout"></div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            
-            // =================================================================
-            // --- CONFIGURATION ---
-            // =================================================================
-            const theme = getComputedStyle(document.documentElement);
-            const CONFIG = {
-                correctPin: "2211",
-                hintText: "อยู่ในกล่องไง",
-                countdownDuration: 3, // seconds
-                songDuration: 30, // seconds - play only first 30 seconds
-                fadeOutDuration: 3000, // milliseconds
-                messages: {
-                    happy: "happy",
-                    birthday: "birthday",
-                    wish: "Make a wish and celebrate!",
-                    thai: "มีความสุขมากๆนะครับ",
-                    blowCandle: "เป่าเทียน",
-                    goNext: "ไปต่อ"
-                },
-                fireworkColor: theme.getPropertyValue('--accent-color').trim(),
-                // สีพลุ/คอนเฟตตี = สีเดียวกับสติกเกอร์ (พาสเทล)
-                palette: ['#EDB8C4', '#F2CD6B', '#BFD1B5', '#C9A27E', '#B9D3DB', '#F2C6CF']
-            };
+        // =================================================================
+        // แก้ข้อความ/รหัสได้ตรงนี้
+        // =================================================================
+        const CONFIG = {
+            correctPin: "0001",
+            hintText: "อยู่ในกล่องไง",
+            candles: 5,
+        };
+        const LETTER = {
+            to: "ถึงคนพิเศษ",
+            folds: [
+                ["สุขสันต์วันเกิดนะครับ"],
+                ["ขอให้ปีนี้มีเรื่องดี ๆ ให้ยิ้มได้เยอะ ๆ", "มีความสุขเยอะๆ ได้มีเวลาพัก", "ในวันที่เหนื่อยด้วยย"],
+                ["ขอให้ร่างกายแข็งแรง ไม่ดื้อไม่ซน", "นอนหลับพักผ่อนเพียงพอ", "เจอแต่คนดีๆนะ"],
+            ],
+            from: "จาก ... โชกุน",
+            button: "ไปรับดอกไม้กัน",
+        };
+        const PALETTE = ['#E7D3BD', '#C9A27E', '#8B5E3C', '#F6CAD6', '#FFFFFF', '#C9D8BE'];
 
-            // =================================================================
-            // --- PAGE & ELEMENT REFERENCES ---
-            // =================================================================
-            const pages = {
-                countdown: document.getElementById('page-countdown'),
-                birthday: document.getElementById('page-birthday'),
-                start: document.getElementById('page-start'),
-                gate: document.getElementById('page-gate')
-            };
-            const fadeOverlay = document.getElementById('fadeOverlay');
-            const actionButton = document.getElementById('actionButton');
-            const readyButton = document.getElementById('readyButton');
-            const confirmButton = document.getElementById('confirmButton');
-            const hintButton = document.getElementById('hintButton');
-            const modal = document.getElementById('hintModal');
-            const closeModalButton = document.getElementById('closeModalButton');
-            const hintTextElement = document.getElementById('hintText');
-            const countdownTextElement = document.getElementById('countdownText');
-            const pinContainer = document.getElementById('pin-container');
-            const passwordInput = document.getElementById('passwordInput');
-            const fireworksCanvas = document.getElementById('fireworks-canvas');
-            const ctx = fireworksCanvas.getContext('2d');
+        // =================================================================
+        // ฉาก
+        // =================================================================
+        const scenes = {
+            gate: document.getElementById('scene-gate'),
+            countdown: document.getElementById('scene-countdown'),
+            cake: document.getElementById('scene-cake'),
+            letter: document.getElementById('scene-letter'),
+            flowers: document.getElementById('scene-flowers'),
+        };
+        function go(name) {
+            Object.values(scenes).forEach(s => s.classList.remove('is-active'));
+            const scene = scenes[name];
+            scene.classList.add('is-active');
+            const stage = scene.querySelector('.cg-stage');
+            if (stage) Collage.show(stage); else Collage.tear(scene);
+            if (window.Music) Music.scene(name);
+            if (name === 'countdown') runCountdown();
+            if (name === 'flowers') setTimeout(startFlowers, 1500);
+        }
 
-            // =================================================================
-            // --- STATE MANAGEMENT ---
-            // =================================================================
-            let interactionState = 'blow_candle'; // 'blow_candle' or 'go_next'
-            let countdownTimer = CONFIG.countdownDuration;
-            let rockets = [];
-            let particles = [];
-            let confetti = [];
-            let explosionHasStarted = false;
-            let animationRunning = false;
-            let musicFadeInterval = null;
-            let musicStartTime = 0;
-            let isAudioReady = false;
-            let pinAccepted = false; // กันตรวจรหัสซ้ำ (พิมพ์ครบ 4 หลัก + กดยืนยันพร้อมกัน)
+        // =================================================================
+        // เพลง: เริ่มตอนแตะครั้งแรก
+        // =================================================================
+        const musicBtn = document.getElementById('musicBtn');
+        function startMusic() {
+            if (!window.Music || !window.Tone) return;
+            Music.start();
+            musicBtn.classList.add('is-on');
+            Collage.tear(musicBtn);
+        }
+        document.addEventListener('pointerup', startMusic, { once: true });
+        document.addEventListener('touchend', startMusic, { once: true });
+        document.addEventListener('keydown', startMusic, { once: true });
+        musicBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            musicBtn.classList.toggle('is-muted', Music.toggle());
+        });
 
-            // =================================================================
-            // --- TONE.JS AUDIO SETUP ---
-            // =================================================================
-            
-            // Create a reverb effect for a softer, more atmospheric sound
-            const reverb = new Tone.Reverb({
-                decay: 4,
-                preDelay: 0.01,
-                wet: 0.3
-            }).toDestination();
+        // =================================================================
+        // ฉาก 1: ใส่รหัสบนตั๋ว
+        // =================================================================
+        const gateStage = document.getElementById('gateStage');
+        const passwordInput = document.getElementById('passwordInput');
+        const pinContainer = document.getElementById('pin-container');
+        const modal = document.getElementById('hintModal');
+        let pinAccepted = false;
 
-            // Create a synthesizer with a softer, "cuter" tone
-            const synth = new Tone.PolySynth(Tone.FMSynth, {
-                harmonicity: 3.01,
-                modulationIndex: 10,
-                envelope: {
-                    attack: 0.01,
-                    decay: 0.1,
-                    sustain: 0.2,
-                    release: 1.5
-                },
-                modulationEnvelope: {
-                    attack: 0.01,
-                    decay: 0.5,
-                    sustain: 0.1,
-                    release: 1.5
-                }
-            }).connect(reverb);
+        function checkPin() {
+            const pin = passwordInput.value.trim();
+            if (pinAccepted || !pin) return;
+            if (pin === CONFIG.correctPin) {
+                pinAccepted = true;
+                passwordInput.blur();
+                Collage.panTo(gateStage, null);
+                Music.sfx('chime');
+                setTimeout(() => go('countdown'), 500);
+            } else {
+                pinContainer.classList.add('cg-wrong');
+                passwordInput.value = '';
+                setTimeout(() => pinContainer.classList.remove('cg-wrong'), 500);
+            }
+        }
+        passwordInput.addEventListener('input', () => {
+            const digits = passwordInput.value.replace(/[^0-9]/g, '').slice(0, 4);
+            if (passwordInput.value !== digits) passwordInput.value = digits;
+            if (digits.length === 4) setTimeout(checkPin, 250);   // iPhone ไม่มีปุ่ม Enter
+        });
+        passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') checkPin(); });
+        passwordInput.addEventListener('focus', () => setTimeout(() => Collage.panTo(gateStage, pinContainer, 90), 50));
+        passwordInput.addEventListener('blur', () => Collage.panTo(gateStage, null));
+        document.getElementById('confirmButton').addEventListener('click', checkPin);
+        document.getElementById('hintButton').addEventListener('click', () => {
+            document.getElementById('hintText').textContent = CONFIG.hintText;
+            modal.classList.add('is-open');
+            Collage.tear(modal);
+            Music.sfx('paper');
+        });
+        document.getElementById('closeModalButton').addEventListener('click', () => modal.classList.remove('is-open'));
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('is-open'); });
 
-            // Set volume to 50%
-            synth.volume.value = -6; // -6dB is approximately 50% volume
-
-            // Define the Happy Birthday melody
-            const melodyNotes = [
-                // "Happy birthday to you"
-                { time: '0:0', note: 'D4', duration: '8n' },
-                { time: '0:0.5', note: 'D4', duration: '8n' },
-                { time: '0:1', note: 'E4', duration: '4n' },
-                { time: '0:2', note: 'D4', duration: '4n' },
-                { time: '1:0', note: 'G4', duration: '4n' },
-                { time: '1:1', note: 'F#4', duration: '2n' },
-
-                // "Happy birthday to you"
-                { time: '2:0', note: 'D4', duration: '8n' },
-                { time: '2:0.5', note: 'D4', duration: '8n' },
-                { time: '2:1', note: 'E4', duration: '4n' },
-                { time: '2:2', note: 'D4', duration: '4n' },
-                { time: '3:0', note: 'A4', duration: '4n' },
-                { time: '3:1', note: 'G4', duration: '2n' },
-
-                // "Happy birthday dear..."
-                { time: '4:0', note: 'D4', duration: '8n' },
-                { time: '4:0.5', note: 'D4', duration: '8n' },
-                { time: '4:1', note: 'D5', duration: '4n' },
-                { time: '4:2', note: 'B4', duration: '4n' },
-                { time: '5:0', note: 'G4', duration: '4n' },
-                { time: '5:1', note: 'F#4', duration: '4n' },
-                { time: '5:2', note: 'E4', duration: '2n' },
-
-                // "Happy birthday to you"
-                { time: '6:1', note: 'C5', duration: '8n' },
-                { time: '6:1.5', note: 'C5', duration: '8n' },
-                { time: '6:2', note: 'B4', duration: '4n' },
-                { time: '7:0', note: 'G4', duration: '4n' },
-                { time: '7:1', note: 'A4', duration: '4n' },
-                { time: '7:2', note: 'G4', duration: '2n' },
+        // =================================================================
+        // ฉาก 2: นับถอยหลัง
+        // =================================================================
+        function runCountdown() {
+            // ตัวเลขแต่ละตัวเป็นกระดาษคนละแบบ หล่นลงมาซ้อนทับกัน แล้วปิดท้ายด้วยตราประทับ "เริ่ม!"
+            const stack = document.getElementById('countStack');
+            stack.innerHTML = '';
+            const cards = [
+                { n: '3', paper: 'cg-kraft cg-grain', color: '#4A3020', font: "Georgia, serif", r: -8 },
+                { n: '2', paper: 'cg-notebook cg-grain', color: '#8B5E3C', font: "Impact, 'Arial Black', sans-serif", r: 6 },
+                { n: '1', paper: 'cg-mount cg-grain', color: '#6B4A32', font: "'Courier New', monospace", r: -3 },
             ];
-
-            // Create a Tone.Part to schedule the notes
-            const melodyPart = new Tone.Part((time, value) => {
-                synth.triggerAttackRelease(value.note, value.duration, time);
-            }, melodyNotes).start(0);
-            melodyPart.loop = true;
-            melodyPart.loopEnd = '8m';
-
-            // Configure the transport
-            Tone.Transport.bpm.value = 100;
-
-            // =================================================================
-            // --- AUDIO FUNCTIONS ---
-            // =================================================================
-            
-            // ⭐️⭐️⭐️ [START OF CHANGE 2] ⭐️⭐️⭐️
-            async function startBackgroundMusic() {
-                try {
-                    // เราไม่จำเป็นต้อง await Tone.start() ที่นี่อีกแล้ว
-                    // เพราะเราทำไปแล้วตอนกดปุ่ม
-                    // แต่ใส่ไว้เช็กเผื่อเฉยๆ (แบบไม่ await) ก็ได้ครับ
-                    if (!isAudioReady) {
-                        console.warn('Audio context not ready. Trying to start (may fail on iOS).');
-                        // ไม่ต้อง await เพราะจะทำให้ค้างถ้า user ไม่ได้กด
-                        // และการเรียกครั้งแรก (ใน click) คือครั้งที่สำคัญที่สุด
-                        Tone.start().then(() => { isAudioReady = true; }); 
-                    }
-                    
-                    // Set master volume to 50%
-                    Tone.Destination.volume.value = -6; // -6dB is approximately 50% volume
-                    
-                    if (Tone.Transport.state !== 'started') {
-                        Tone.Transport.start();
-                        musicStartTime = Date.now();
-                        console.log('Melody started at 50% volume');
-                    }
-                } catch (error) {
-                    console.log('Audio setup failed:', error);
-                }
-            }
-            // ⭐️⭐️⭐️ [END OF CHANGE 2] ⭐️⭐️⭐️
-            
-            function fadeOutMusic() {
-                if (musicFadeInterval) {
-                    clearInterval(musicFadeInterval);
-                }
-                
-                const startVolume = Tone.Destination.volume.value;
-                const fadeStep = Math.abs(startVolume + 60) / (CONFIG.fadeOutDuration / 50); // Fade from current to -60dB
-                
-                musicFadeInterval = setInterval(() => {
-                    const currentVolume = Tone.Destination.volume.value;
-                    const newVolume = Math.max(-60, currentVolume - fadeStep);
-                    Tone.Destination.volume.value = newVolume;
-                    
-                    if (newVolume <= -60) {
-                        stopBackgroundMusic();
-                        clearInterval(musicFadeInterval);
-                        musicFadeInterval = null;
-                    }
-                }, 50);
-            }
-            
-            function stopBackgroundMusic() {
-                if (musicFadeInterval) {
-                    clearInterval(musicFadeInterval);
-                    musicFadeInterval = null;
-                }
-                Tone.Transport.stop();
-                Tone.Destination.volume.value = -6; // Reset to 50% volume for next time
-                console.log('Melody stopped');
-            }
-
-            // =================================================================
-            // --- EVENT LISTENERS ---
-            // =================================================================
-            
-            actionButton.addEventListener('click', function() {
-                if (interactionState === 'blow_candle') {
-                    handleBlowCandle();
-                } else if (interactionState === 'go_next') {
-                    fadeOutMusic(); // Start fading out music in background
-                    fadeOverlay.classList.add('visible');
-                    setTimeout(() => { window.location.href = 'envelope.html'; }, 1500); // ไปหน้า envelope
-                }
-            });
-
-            readyButton.addEventListener('click', () => transitionTo('gate'));
-            
-            confirmButton.addEventListener('click', handlePinConfirm);
-
-            // ปลดล็อก Audio Context ตอนผู้ใช้กดยืนยันรหัส
-            // เพื่อให้ iOS อนุญาตให้เล่นเสียงได้ (ต้องเรียกจาก user gesture)
-            function unlockAudio() {
-                if (isAudioReady) return;
-                Tone.start().then(() => {
-                    isAudioReady = true;
-                }).catch((e) => {
-                    console.error('Audio start failed', e);
-                });
-            }
-
-            // แตะช่องรหัสครั้งแรก = ปลดล็อกเสียงไว้ก่อน (iPhone ต้องการการแตะจริง)
-            passwordInput.addEventListener('click', unlockAudio);
-            document.addEventListener('touchend', unlockAudio, { once: true });
-
-            passwordInput.addEventListener('input', () => {
-                const digits = passwordInput.value.replace(/[^0-9]/g, '').slice(0, 4);
-                if (passwordInput.value !== digits) passwordInput.value = digits;
-                // คีย์บอร์ดตัวเลขบน iPhone ไม่มีปุ่ม Enter → ครบ 4 หลักแล้วตรวจให้เลย
-                if (digits.length === 4) setTimeout(handlePinConfirm, 250);
-            });
-
-            // Add Enter key support for password input
-            passwordInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    handlePinConfirm();
-                }
-            });
-
-            hintButton.addEventListener('click', () => { 
-                hintTextElement.textContent = CONFIG.hintText;
-                modal.classList.remove('hidden'); 
-                modal.classList.add('flex'); 
-            });
-            closeModalButton.addEventListener('click', () => { modal.classList.add('hidden'); modal.classList.remove('flex'); });
-            modal.addEventListener('click', (e) => { if (e.target === modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }});
-            
-            window.addEventListener('resize', debounceResize);
-
-            // =================================================================
-            // --- CORE FUNCTIONS ---
-            // =================================================================
-
-            function transitionTo(targetPageId) {
-                fadeOverlay.classList.add('visible');
-                setTimeout(() => {
-                    Object.values(pages).forEach(page => page.classList.add('hidden'));
-                    pages[targetPageId].classList.remove('hidden');
-                    
-                    if (targetPageId === 'birthday') {
-                        startBirthdayPageAnimations();
-                        startBackgroundMusic(); // Start Tone.js melody when entering birthday page
-                    }
-                    if (targetPageId === 'gate') {
-                        passwordInput.value = '';
-                        passwordInput.focus();
-                    }
-                    if (targetPageId === 'countdown') resetAndStartCountdown();
-
-                    setTimeout(() => fadeOverlay.classList.remove('visible'), 100);
-                }, 1500);
-            }
-
-            function handleBlowCandle() {
-                explosionHasStarted = false; 
-                document.querySelector('.candle').classList.add('blown-out'); 
-                
-                launchFireworkFromPosition(window.innerWidth * 0.2);
-                launchFireworkFromPosition(window.innerWidth * 0.5);
-                launchFireworkFromPosition(window.innerWidth * 0.8);
-                
-                // Start confetti after a short delay
-                setTimeout(() => {
-                    createConfetti();
-                }, 500);
-                
-                setTimeout(() => {
-                    const pos1 = 0.35;
-                    const pos2 = 0.65;
-                    launchFireworkFromPosition(window.innerWidth * pos1);
-                    launchFireworkFromPosition(window.innerWidth * pos2);
-                }, 1000);
-                
-                actionButton.classList.remove('visible');
-                setTimeout(() => {
-                    actionButton.textContent = CONFIG.messages.goNext;
-                    actionButton.classList.add('visible');
-                    interactionState = 'go_next';
-                }, 3500);
-            }
-
-            function handlePinConfirm() {
-                const enteredPin = passwordInput.value.trim();
-                if (pinAccepted || enteredPin.length === 0) return;
-                if (enteredPin === CONFIG.correctPin) {
-                    pinAccepted = true;
-                    unlockAudio();
-                    passwordInput.blur();
-                    transitionTo('countdown'); // รหัสถูก → นับถอยหลัง → หน้าเค้ก
-                } else {
-                    pinContainer.classList.add('shake');
-                    passwordInput.value = '';
-                    passwordInput.focus();
-                    setTimeout(() => pinContainer.classList.remove('shake'), 500);
-                }
-            }
-
-            function updateCountdown() {
-                if (countdownTimer >= 0) {
-                    countdownTextElement.textContent = countdownTimer > 0 ? `จะเริ่มใน ${countdownTimer} วินาที` : 'เริ่ม!';
-                    countdownTimer--;
-                    setTimeout(updateCountdown, 1100);
-                } else {
-                    transitionTo('birthday');
-                }
-            }
-            
-            function resetAndStartCountdown() {
-                countdownTimer = CONFIG.countdownDuration;
-                updateCountdown();
-            }
-
-            // =================================================================
-            // --- ANIMATION & VISUALS ---
-            // =================================================================
-
-            function startBirthdayPageAnimations() {
-                document.querySelector('.wishes').textContent = CONFIG.messages.wish;
-                document.querySelector('.thai-message').textContent = CONFIG.messages.thai;
-
-                // สติกเกอร์กระจายออกหลังหน้าจางเข้ามาแล้ว
-                setTimeout(() => Scrapbook.init(pages.birthday), 900);
-                
-                setTimeout(() => {
-                    const happyText = document.querySelector('.happy-text');
-                    const birthdayText = document.querySelector('.birthday-text');
-                    typeWriter(happyText, CONFIG.messages.happy, 150, () => {
-                        typeWriter(birthdayText, CONFIG.messages.birthday, 150);
-                    });
-                }, 1000);
-
-                setTimeout(() => {
-                    actionButton.textContent = CONFIG.messages.blowCandle;
-                    actionButton.classList.add('visible');
-                }, 7000);
-            }
-
-            function typeWriter(element, text, speed, callback) {
-                let i = 0;
-                element.innerHTML = '';
-                function type() {
-                    if (i < text.length) {
-                        element.innerHTML += text.charAt(i);
-                        i++;
-                        setTimeout(type, speed);
-                    } else if (callback) callback();
-                }
-                type();
-            }
-
-            // --- Canvas Fireworks Section ---
-            function resizeCanvas() {
-                fireworksCanvas.width = window.innerWidth;
-                fireworksCanvas.height = window.innerHeight;
-            }
-
-            class Rocket {
-                constructor(x, y) {
-                    this.x = x; 
-                    this.y = window.innerHeight * 0.85; // Start at 15% from bottom
-                    this.targetY = window.innerHeight * 0.3 + Math.random() * (window.innerHeight * 0.1);
-                    this.speed = 2;
-                }
-                update() {
-                    this.y -= this.speed;
-                    return this.y <= this.targetY;
-                }
-                draw() {
-                    ctx.globalAlpha = 1;
-                    ctx.fillStyle = CONFIG.fireworkColor;
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-
-            class Particle {
-                constructor(x, y) {
-                    this.x = x; this.y = y;
-                    this.vx = (Math.random() - 0.5) * 2.5;
-                    this.vy = (Math.random() - 0.5) * 2.5;
-                    this.life = 80;
-                    this.maxLife = 80;
-                    this.size = 2;
-                    this.gravity = 0.02;
-                    this.friction = 0.98;
-                    this.color = CONFIG.palette[Math.floor(Math.random() * CONFIG.palette.length)];
-                }
-                update() {
-                    this.vx *= this.friction; this.vy *= this.friction;
-                    this.vy += this.gravity;
-                    this.x += this.vx; this.y += this.vy;
-                    this.life--;
-                }
-                draw() {
-                    ctx.globalAlpha = this.life / this.maxLife;
-                    ctx.fillStyle = this.color;
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-
-            class Confetti {
-                constructor() {
-                    this.x = Math.random() * window.innerWidth;
-                    this.y = -10;
-                    this.vx = (Math.random() - 0.5) * 0.5;
-                    this.vy = Math.random() * 0.3 + 0.2;
-                    this.rotation = Math.random() * 360;
-                    this.rotationSpeed = (Math.random() - 0.5) * 5;
-                    this.size = Math.random() * 8 + 4;
-                    this.color = CONFIG.palette[Math.floor(Math.random() * CONFIG.palette.length)];
-                    this.life = 180;
-                    this.gravity = 0.015;
-                    this.friction = 0.995;
-                }
-                
-                update() {
-                    this.vy += this.gravity;
-                    this.vx *= this.friction;
-                    this.x += this.vx;
-                    this.y += this.vy;
-                    this.rotation += this.rotationSpeed;
-                    this.life--;
-                }
-                
-                draw() {
-                    ctx.save();
-                    ctx.translate(this.x, this.y);
-                    ctx.rotate(this.rotation * Math.PI / 180);
-                    ctx.fillStyle = this.color;
-                    ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
-                    ctx.restore();
-                }
-            }
-
-            function createConfetti() {
-                // Create limited confetti particles to avoid lag
-                for (let i = 0; i < 30; i++) {
-                    setTimeout(() => {
-                        confetti.push(new Confetti());
-                    }, i * 50); // Stagger creation
-                }
-            }
-
-            function createExplosion(x, y) {
-                const particleCount = 50;
-                for (let i = 0; i < particleCount; i++) {
-                    particles.push(new Particle(x, y));
-                }
-            }
-
-            function launchFireworkFromPosition(x) {
-                rockets.push(new Rocket(x));
-                if (!animationRunning) {
-                    animationRunning = true;
-                    animateFireworks();
-                }
-            }
-
-            function animateFireworks() {
-                if (rockets.length === 0 && particles.length === 0 && confetti.length === 0) {
-                    animationRunning = false;
+            let i = 0;
+            const drop = () => {
+                if (i === cards.length) {
+                    const stamp = document.createElement('div');
+                    stamp.className = 'count-go';
+                    stamp.innerHTML =
+                        '<div class="cg-lift" style="position:relative;">' +
+                        '<div class="cg-mount cg-tear cg-grain" data-tear="6" style="--m:0; width:190px; padding:22px 10px 12px; text-align:center;">' +
+                        '<div class="cg-thai" style="font-size:56px; font-weight:600; color:#6B4A32; line-height:1.5;">เริ่ม!</div></div>' +
+                        '<div class="cg-tape" style="width:60px; top:-6px; left:-14px; transform:rotate(-32deg);"></div>' +
+                        '<div class="cg-tape" style="width:44px; bottom:-6px; right:-10px; transform:rotate(-38deg);"></div></div>';
+                    stack.appendChild(stamp);
+                    Collage.tear(stamp);
+                    Collage.confetti(document.getElementById('countStage'), ['#C9A27E', '#8B5E3C', '#E7D3BD', '#FFFFFF', '#D9B98F'], 36);
+                    Music.sfx('stamp');
+                    setTimeout(() => go('cake'), 2200);
                     return;
                 }
+                const c = cards[i++];
+                const el = document.createElement('div');
+                el.className = 'count-card cg-lift';
+                el.style.setProperty('--r', c.r + 'deg');
+                el.innerHTML = `<div class="${c.paper} cg-tear" data-tear="7" style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">` +
+                    `<span style="font-family:${c.font}; font-size:120px; font-weight:700; color:${c.color}; line-height:1;">${c.n}</span></div>` +
+                    `<div class="cg-tape" style="width:58px; top:-8px; left:46px; transform:rotate(${-c.r}deg);"></div>`;
+                stack.appendChild(el);
+                Collage.tear(el);
+                Music.sfx('drop', i - 1);
+                setTimeout(drop, 1350);
+            };
+            setTimeout(drop, 1200);
+        }
 
-                ctx.clearRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
-                
-                // Update and draw rockets
-                for (let i = rockets.length - 1; i >= 0; i--) {
-                    const rocket = rockets[i];
-                    rocket.draw();
-                    if (rocket.update()) {
-                        createExplosion(rocket.x, rocket.y);
-                        rockets.splice(i, 1);
-                        explosionHasStarted = true;
-                    }
+        // =================================================================
+        // ฉาก 3: เค้ก — ปัดขึ้นเพื่อเป่า
+        // =================================================================
+        (function buildCake() {
+            // เค้กวินเทจสไตล์ Lambeth: ขอบบีบครีมเป็นเปลือกหอย, สวิงครีม, เชอร์รี่, โบว์, บนขาตั้งเค้ก
+            // ทั้งก้อนตัดขอบขาวตามรูปทรงเค้ก (สติกเกอร์ไดคัท) ด้วย SVG filter
+            const svg = document.getElementById('cakeSvg');
+            const CX = 130, RX = 88, RY = 17, TOP = 100, BOT = 190;
+            const ye = (x) => RY * Math.sqrt(Math.max(0, 1 - ((x - CX) / RX) ** 2));   // ความโค้งของขอบหน้าเค้ก
+            const n = CONFIG.candles;
+            const xs = Array.from({ length: n }, (_, i) => 82 + i * (96 / Math.max(1, n - 1)));
+
+            const shells = (yBase, r, count, fill, stroke) => {
+                let s = '';
+                for (let i = 0; i <= count; i++) {
+                    const x = CX - RX + (2 * RX) * i / count, y = yBase + ye(x);
+                    s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="1.2"/>` +
+                         `<path d="M${(x - r * .45).toFixed(1)} ${(y + r * .1).toFixed(1)} q${(r * .45).toFixed(1)} ${(-r * .7).toFixed(1)} ${(r * .9).toFixed(1)} 0" stroke="${stroke}" stroke-width="1" fill="none"/>`;
                 }
-                
-                // Update and draw particles
-                for (let i = particles.length - 1; i >= 0; i--) {
-                    const particle = particles[i];
-                    particle.update();
-                    particle.draw();
-                    if (particle.life <= 0) {
-                        particles.splice(i, 1);
-                    }
-                }
-                
-                // Update and draw confetti
-                for (let i = confetti.length - 1; i >= 0; i--) {
-                    const piece = confetti[i];
-                    piece.update();
-                    piece.draw();
-                    if (piece.y > window.innerHeight + 20 || piece.life <= 0) {
-                        confetti.splice(i, 1);
-                    }
-                }
-                
-                requestAnimationFrame(animateFireworks);
+                return s;
+            };
+            const joins = [CX - RX, CX - RX / 2, CX, CX + RX / 2, CX + RX];
+            let swags = '', rosettes = '';
+            for (let i = 0; i < joins.length - 1; i++) {
+                const x1 = joins[i], x2 = joins[i + 1], y1 = 122 + ye(x1), y2 = 122 + ye(x2);
+                const mx = (x1 + x2) / 2, my = 122 + ye(mx) + 22;
+                const d = `M${x1} ${y1.toFixed(1)} Q${mx} ${my.toFixed(1)} ${x2} ${y2.toFixed(1)}`;
+                swags += `<path d="${d}" stroke="#D9B48C" stroke-width="6" fill="none" stroke-linecap="round"/>` +
+                         `<path d="${d}" stroke="#FFF8EE" stroke-width="2" fill="none" stroke-dasharray="0 7" stroke-linecap="round"/>`;
+            }
+            joins.slice(1, -1).forEach(x => {
+                const y = 122 + ye(x);
+                rosettes += `<circle cx="${x}" cy="${y.toFixed(1)}" r="6.5" fill="#B9845A"/><path d="M${x - 3} ${y.toFixed(1)} a3 3 0 1 1 3 3" stroke="#E7CBA9" stroke-width="1.3" fill="none"/>`;
+            });
+            const cherry = (x, y) => `<path d="M${x} ${y - 7} q3 -10 9 -13" stroke="#6B4A32" stroke-width="1.6" fill="none"/>` +
+                `<circle cx="${x}" cy="${y}" r="8" fill="#B5343E"/><ellipse cx="${x - 3}" cy="${y - 3}" rx="2.4" ry="1.6" fill="#fff" opacity=".7"/>`;
+            const bow = (x, y) => `<path d="M${x} ${y} c-14 -12 -24 -2 -18 6 c4 6 12 2 18 -6z M${x} ${y} c14 -12 24 -2 18 6 c-4 6 -12 2 -18 -6z" fill="#8B5E3C"/>` +
+                `<path d="M${x - 2} ${y + 2} l-8 18 M${x + 2} ${y + 2} l8 18" stroke="#8B5E3C" stroke-width="4" stroke-linecap="round"/>` +
+                `<circle cx="${x}" cy="${y}" r="4" fill="#6E4529"/>`;
+            const candleBodies = xs.map(x => `
+                <rect x="${x - 3.5}" y="44" width="7" height="${TOP - 40}" rx="2" fill="#FFF8EE" stroke="#DCC7AE"/>
+                <path d="M${x - 3.5} 52 l7 -5 M${x - 3.5} 62 l7 -5 M${x - 3.5} 72 l7 -5 M${x - 3.5} 82 l7 -5 M${x - 3.5} 92 l7 -5" stroke="#C49A72" stroke-width="1.6"/>
+                <path d="M${x} 44 v-4" stroke="#6B4A32" stroke-width="1.4"/>`).join('');
+            const flames = xs.map((x, i) => `
+                <g class="candle" data-i="${i}">
+                    <path class="smoke" d="M${x} 34 c-5 -6 5 -10 0 -16 c-4 -5 3 -8 1 -12" stroke="#BFB6AD" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    <g class="flame-wrap"><g class="flame">
+                        <ellipse cx="${x}" cy="28" rx="10" ry="12" fill="#FFE7A3" opacity=".45"/>
+                        <path d="M${x} 16 C${x + 6} 24 ${x + 6} 31 ${x} 39 C${x - 6} 31 ${x - 6} 24 ${x} 16 Z" fill="#FFB84D"/>
+                        <path d="M${x} 24 C${x + 3} 29 ${x + 3} 33 ${x} 38 C${x - 3} 33 ${x - 3} 29 ${x} 24 Z" fill="#FFF1C9"/>
+                    </g></g>
+                </g>`).join('');
+
+            svg.innerHTML = `
+                <defs>
+                    <filter id="diecut" x="-10%" y="-10%" width="120%" height="120%">
+                        <feMorphology in="SourceAlpha" operator="dilate" radius="7" result="grow"/>
+                        <feFlood flood-color="#FFFFFF"/>
+                        <feComposite in2="grow" operator="in" result="outline"/>
+                        <feMerge><feMergeNode in="outline"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                    <filter id="diecutThin" x="-30%" y="-10%" width="160%" height="120%">
+                        <feMorphology in="SourceAlpha" operator="dilate" radius="2.5" result="grow"/>
+                        <feFlood flood-color="#FFFFFF"/>
+                        <feComposite in2="grow" operator="in" result="outline"/>
+                        <feMerge><feMergeNode in="outline"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                </defs>
+                <!-- เทียน: ขอบขาวบางกว่าตัวเค้ก -->
+                <g filter="url(#diecutThin)">${candleBodies}</g>
+                <g filter="url(#diecut)">
+                    <!-- ขาตั้งเค้ก -->
+                    <path d="M116 214 L144 214 L138 250 L122 250 Z" fill="#F3EADF" stroke="#DCC7AE"/>
+                    <ellipse cx="130" cy="252" rx="38" ry="8" fill="#F3EADF" stroke="#DCC7AE"/>
+                    <ellipse cx="130" cy="${BOT + 12}" rx="112" ry="20" fill="#FFFDF9" stroke="#DCC7AE"/>
+                    <!-- ตัวเค้ก -->
+                    <path d="M${CX - RX} ${TOP} L${CX - RX} ${BOT} A${RX} ${RY} 0 0 0 ${CX + RX} ${BOT} L${CX + RX} ${TOP} Z" fill="#FFF4E6"/>
+                    <path d="M${CX - RX} ${TOP + 30} L${CX - RX} ${BOT} A${RX} ${RY} 0 0 0 ${CX + RX} ${BOT} L${CX + RX} ${TOP + 30} A${RX} ${RY} 0 0 1 ${CX - RX} ${TOP + 30} Z" fill="#FBEBD8" opacity=".6"/>
+                    ${swags}${rosettes}
+                    <text x="${CX}" y="166" text-anchor="middle" font-family="Caveat, cursive" font-size="25" fill="#7A4E2D">happy birthday</text>
+                    ${shells(BOT, 8, 13, '#FFFDF8', '#E0CBB1')}
+                    ${shells(TOP, 7, 14, '#FFFDF8', '#E0CBB1')}
+                    ${bow(CX, TOP + 26)}
+                    ${cherry(CX - 66, TOP + 6)}${cherry(CX + 66, TOP + 6)}
+                </g>
+                ${flames}`;
+        })();
+
+        (function cakeSwipe() {
+            const stage = document.getElementById('cakeStage');
+            const svg = document.getElementById('cakeSvg');
+            let y0 = null, x0 = 0, t0 = 0, done = false;
+            const lit = () => [...svg.querySelectorAll('.candle:not(.is-out)')];
+            const lean = (dx, dy) => {
+                const up = Math.max(0, dy);
+                svg.style.setProperty('--lean', Math.max(-28, Math.min(28, dx * 0.25 + (up ? Math.sin(up / 12) * 6 : 0))) + 'deg');
+                svg.style.setProperty('--stretch', (1 - Math.min(up / 380, 0.45)).toFixed(2));
+            };
+            stage.addEventListener('pointerdown', (e) => {
+                if (done || !scenes.cake.classList.contains('is-active') || e.target.closest('button')) return;
+                y0 = e.clientY; x0 = e.clientX; t0 = performance.now();
+            });
+            stage.addEventListener('pointermove', (e) => { if (y0 !== null) lean(e.clientX - x0, y0 - e.clientY); });
+            const release = (e) => {
+                if (y0 === null) return;
+                const dy = y0 - e.clientY, dt = Math.max(1, performance.now() - t0);
+                y0 = null;
+                lean(0, 0);
+                if (dy < 45) return;
+                Music.sfx('blow');
+                let n = Math.round(dy / 90) + (dy / dt > 1.1 ? 1 : 0);   // ปัดยาว/เร็ว = ดับหลายเล่ม
+                const candidates = lit().sort(() => Math.random() - 0.5).slice(0, Math.max(1, n));
+                candidates.forEach((c, i) => setTimeout(() => {
+                    c.classList.add('is-out');
+                    Music.sfx('tink');
+                    if (!lit().length) celebrate();
+                }, 160 + i * 220));
+            };
+            stage.addEventListener('pointerup', release);
+            stage.addEventListener('pointercancel', () => { y0 = null; lean(0, 0); });
+
+            function celebrate() {
+                if (done) return;
+                done = true;
+                setTimeout(() => {
+                    Music.sfx('pop');
+                    Music.sfx('chime');
+                    Music.scene('happy');
+                    Collage.confetti(stage, PALETTE, 54);
+                    document.getElementById('cakeHint').classList.add('is-gone');
+                    setTimeout(() => document.getElementById('cakeWish').classList.add('is-in'), 1100);
+                    setTimeout(() => document.getElementById('cakeNext').classList.add('is-in'), 2300);
+                }, 700);
+            }
+        })();
+        document.getElementById('toLetter').addEventListener('click', () => { Music.sfx('paper'); go('letter'); });
+
+        // =================================================================
+        // ฉาก 4: จดหมาย — ลากตราประทับ แล้วคลี่ทีละทบ
+        // =================================================================
+        (function buildLetter() {
+            const HEART = '<svg viewBox="0 0 34 30" width="17" height="15" style="vertical-align:-1px" aria-hidden="true"><path d="M17 28C3 18 0 10 5 5C9 1 15 3 17 8C19 3 25 1 29 5C34 10 31 18 17 28Z" fill="#8B5E3C"/></svg>';
+            const line = (html, cls = 'letter-text') => `<p class="line ${cls}">${html.replace(/🤎/g, HEART)}</p>`;
+            document.getElementById('fold1').innerHTML =
+                line(LETTER.to, 'letter-hand" style="font-size:27px; line-height:28px;') +
+                LETTER.folds[0].map(t => line(t)).join('');
+            document.getElementById('fold2').innerHTML = LETTER.folds[1].map(t => line(t)).join('');
+            document.getElementById('fold3').innerHTML = LETTER.folds[2].map(t => line(t)).join('') +
+                line(LETTER.from, 'letter-hand" style="font-size:26px; text-align:right; margin-top:10px;') +
+                `<div class="line" style="text-align:right; margin-top:12px;"><button id="toFlowers" class="cg-tag">${LETTER.button}</button></div>`;
+        })();
+
+        (function letterInteraction() {
+            const seal = document.getElementById('seal');
+            const env = document.getElementById('env');
+            const paper = document.getElementById('letterPaper');
+            const hint = document.getElementById('unfoldHint');
+            const folds = [1, 2, 3].map(i => document.getElementById('fold' + i));
+            let start = null, opened = false, shown = 1;
+            const k = () => parseFloat(document.querySelector('#letterStage .cg-canvas').style.getPropertyValue('--k')) || 1;
+
+            const revealLines = (fold) => fold.querySelectorAll('.line').forEach((l, i) => setTimeout(() => l.classList.add('is-in'), 550 + i * 650));
+            const placeHint = () => {
+                hint.style.top = (shown * 200 + 10) + 'px';
+                hint.style.opacity = shown < 3 ? 1 : 0;
+                paper.style.setProperty('--ly', ((3 - shown) * 100) + 'px');   // ให้จดหมายอยู่กลางจอเสมอ
+            };
+
+            seal.addEventListener('pointerdown', (e) => {
+                if (opened) return;
+                e.stopPropagation();
+                seal.setPointerCapture(e.pointerId);
+                start = { x: e.clientX, y: e.clientY };
+                seal.classList.add('is-dragging');
+            });
+            seal.addEventListener('pointermove', (e) => {
+                if (!start) return;
+                const dx = (e.clientX - start.x) / k(), dy = (e.clientY - start.y) / k();
+                const d = Math.hypot(dx, dy);
+                seal.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.3}deg) scale(${1 + Math.min(d / 400, 0.15)})`;
+                if (d > 90) peel(dx, dy);
+            });
+            const drop = () => {
+                if (!start || opened) return;
+                start = null;
+                seal.classList.remove('is-dragging');
+                seal.style.transform = '';   // ลากไม่พอ → เด้งกลับ
+            };
+            seal.addEventListener('pointerup', drop);
+            seal.addEventListener('pointercancel', drop);
+
+            function peel(dx, dy) {
+                opened = true; start = null;
+                seal.classList.remove('is-dragging');
+                seal.classList.add('is-peeled');
+                const fx = dx * 4, fy = dy * 4 + 700;
+                seal.style.transform = `translate(${fx}px, ${fy}px) rotate(${dx > 0 ? 260 : -260}deg)`;
+                Music.sfx('rip');
+                env.classList.add('is-open');
+                document.getElementById('letterHint').classList.add('is-gone');
+                setTimeout(() => {
+                    Music.sfx('paper');
+                    document.getElementById('envPiece').classList.add('is-gone');
+                    placeHint();
+                    paper.classList.add('is-out');
+                    revealLines(folds[0]);
+                }, 2000);
             }
 
-            // Debounced resize function
-            let resizeTimeout;
-            function debounceResize() {
-                clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(resizeCanvas, 100);
-            }
+            paper.addEventListener('click', (e) => {
+                if (!paper.classList.contains('is-out') || shown >= 3 || e.target.closest('button')) return;
+                const f = folds[shown];
+                f.classList.add('is-unfolding');
+                f.classList.remove('is-folded');
+                shown++;
+                Music.sfx('paper');
+                placeHint();
+                revealLines(f);
+            });
+        })();
 
-            // =================================================================
-            // --- INITIALIZATION ---
-            // =================================================================
-            function init() {
-                resizeCanvas();
-                // เริ่มที่หน้าใส่รหัสทันที
-                Object.values(pages).forEach(page => page.classList.add('hidden'));
-                pages.gate.classList.remove('hidden');
-                Scrapbook.init(pages.gate);
-            }
-
-            init();
-
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#toFlowers')) return;
+            Music.sfx('paper');
+            go('flowers');
         });
+
+        // =================================================================
+        // ฉาก 5: ช่อดอกไม้ — ดอกไม้เด้งเข้าช่อ, ผูกโบว์, แตะดอกไม้ได้
+        // =================================================================
+        const bouquetSvg = document.getElementById('bouquet');
+        const flowerStage = document.getElementById('flowerStage');
+        const PETALS = ['#F3DCCB', '#E9C4B0', '#F2C6CF', '#FFF3E6', '#D9A98A'];
+        Bouquet.build(bouquetSvg);
+        let petalTimer = null;
+
+        function startFlowers() {
+            Bouquet.start(bouquetSvg, () => {
+                setTimeout(() => document.getElementById('flowerHint').classList.add('is-in'), 1400);
+                setTimeout(() => document.getElementById('flowerAgain').classList.add('is-in'), 3400);
+                if (!petalTimer && !matchMedia('(prefers-reduced-motion: reduce)').matches) petalTimer = setInterval(fallPetal, 750);
+            });
+        }
+        function fallPetal() {
+            if (!scenes.flowers.classList.contains('is-active')) return;
+            const p = document.createElement('div');
+            const w = 9 + Math.random() * 7;
+            p.className = 'cg-petal';
+            p.style.cssText = `left:${Math.random() * 100}%; top:-20px; width:${w}px; height:${w * 1.2}px; background:${PETALS[(Math.random() * PETALS.length) | 0]};` +
+                `--dx:${(Math.random() * 120 - 60) | 0}px; --rot:${(Math.random() * 540 - 270) | 0}deg; animation-duration:${(7 + Math.random() * 4).toFixed(1)}s;`;
+            flowerStage.appendChild(p);
+            setTimeout(() => p.remove(), 12000);
+        }
+        bouquetSvg.addEventListener('click', (e) => {
+            const f = e.target.closest('.bq');
+            if (!f || !bouquetSvg.classList.contains('is-built')) return;
+            f.classList.remove('is-wiggle'); void f.offsetWidth; f.classList.add('is-wiggle');
+            setTimeout(() => f.classList.remove('is-wiggle'), 750);
+            Music.sfx('tink');
+            const r = flowerStage.getBoundingClientRect();
+            for (let i = 0; i < 9; i++) {
+                const b = document.createElement('div');
+                const w = 8 + Math.random() * 6, a = Math.random() * Math.PI * 2, d = 40 + Math.random() * 50;
+                b.className = 'cg-burst';
+                b.style.cssText = `left:${e.clientX - r.left}px; top:${e.clientY - r.top}px; width:${w}px; height:${w * 1.2}px; background:${PETALS[i % PETALS.length]};` +
+                    `--dx:${(Math.cos(a) * d) | 0}px; --dy:${(Math.sin(a) * d) | 0}px; --rot:${(Math.random() * 360) | 0}deg;`;
+                flowerStage.appendChild(b);
+                setTimeout(() => b.remove(), 1000);
+            }
+        });
+        document.getElementById('replay').addEventListener('click', () => {
+            document.getElementById('whiteout').classList.add('is-on');
+            setTimeout(() => location.reload(), 1500);
+        });
+
+        // =================================================================
+        // เริ่ม
+        // =================================================================
+        window.addEventListener('load', () => go('gate'));
     </script>
 </body>
 </html>

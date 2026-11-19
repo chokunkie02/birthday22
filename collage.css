@@ -1,0 +1,568 @@
+/* =====================================================================
+   Collage kit — หน้าสมุดที่มีคนเอามือแปะของจริงลงไป
+   ออกแบบบนผืน 375x812 (ขนาดมือถือ) แล้ว collage.js ย่อ/ขยายให้พอดีจอ
+   ===================================================================== */
+
+.cg-stage {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    height: 100vh;
+    height: 100dvh;
+    margin: 0 auto;
+    overflow: hidden;
+    background: var(--bg-color);
+}
+.cg-canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 375px;
+    height: 812px;
+    transform-origin: 0 0;
+    transform: translate(var(--x, 0px), calc(var(--y, 0px) + var(--pan, 0px))) scale(var(--k, 1));
+    transition: transform .6s cubic-bezier(.22, .9, .3, 1);
+}
+
+/* --- ชิ้นส่วน: ทุกชิ้นถูก "แปะ" ลงมาทีละชิ้น --- */
+.cg-piece {
+    position: absolute;
+    transform: rotate(var(--r, 0deg));
+    transition: transform 1s cubic-bezier(.22, .9, .3, 1), opacity .5s ease;
+}
+.cg-piece.is-off {
+    transform: rotate(calc(var(--r, 0deg) + 7deg)) translateY(-16px) scale(1.16);
+    opacity: 0;
+    transition: none;
+}
+
+/* เงา = กระดาษยกขึ้นจากหน้าสมุดนิดๆ */
+.cg-lift { filter: drop-shadow(0 1px 1px rgba(60, 40, 30, .14)) drop-shadow(0 6px 7px rgba(60, 40, 30, .16)); }
+.cg-shadow { box-shadow: 0 1px 1px rgba(60, 40, 30, .14), 0 8px 14px -8px rgba(60, 40, 30, .45); }
+
+/* เกรนกระดาษ */
+.cg-grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .40 0 0 0 0 .30 0 0 0 0 .20 0 0 0 .10 0'/%3E%3C/filter%3E%3Crect width='90' height='90' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ขอบฉีก */
+.cg-torn-all { clip-path: polygon(0 6%, 10% 0, 22% 5%, 35% 1%, 48% 6%, 62% 0, 75% 5%, 88% 1%, 100% 6%, 98% 94%, 86% 100%, 72% 95%, 58% 100%, 44% 94%, 30% 100%, 16% 95%, 2% 100%); }
+.cg-torn-top { clip-path: polygon(0 4%, 7% 0, 15% 5%, 24% 1%, 33% 6%, 42% 0, 51% 5%, 60% 1%, 69% 6%, 78% 0, 87% 5%, 100% 2%, 100% 100%, 0 100%); }
+
+/* --- วัสดุ --- */
+.cg-kraft { background-color: #E3CDAF; }
+.cg-doily {
+    border-radius: 50%;
+    background:
+        radial-gradient(circle, transparent 30%, #fff 31% 34%, transparent 35%),
+        radial-gradient(circle, #fff 52%, transparent 53%),
+        repeating-conic-gradient(#F1E8DC 0 6deg, #fff 6deg 12deg);
+    -webkit-mask: radial-gradient(circle, #000 66%, transparent 67%);
+            mask: radial-gradient(circle, #000 66%, transparent 67%);
+}
+.cg-notebook {
+    background-color: #FFFDF8;
+    background-image: repeating-linear-gradient(to bottom, transparent 0 25px, #E7E0D5 25px 26px);
+    background-position: 0 18px;
+}
+.cg-notebook::before {   /* เส้นกั้นหน้ากระดาษสีชมพู */
+    content: "";
+    position: absolute;
+    left: 26px; top: 0; bottom: 0;
+    width: 1px;
+    background: #F2B8C2;
+}
+
+/* เทปกาวลายสก๊อต (โปร่งแสง) */
+.cg-tape {
+    position: absolute;
+    height: 18px;
+    background-color: rgba(235, 220, 201, .82);
+    background-image:
+        repeating-linear-gradient(0deg, rgba(201, 162, 126, .35) 0 5px, transparent 5px 10px),
+        repeating-linear-gradient(90deg, rgba(201, 162, 126, .35) 0 5px, transparent 5px 10px);
+    clip-path: polygon(2% 0, 98% 6%, 100% 50%, 97% 100%, 1% 94%, 0 45%);
+    z-index: 2;
+}
+
+.cg-tape--cocoa {   /* (ชื่อเดิม) เทปลายสก๊อตโทนโกโก้ */
+    background-color: rgba(226, 204, 180, .85);
+    background-image:
+        repeating-linear-gradient(0deg, rgba(139, 94, 60, .28) 0 5px, transparent 5px 10px),
+        repeating-linear-gradient(90deg, rgba(139, 94, 60, .28) 0 5px, transparent 5px 10px);
+}
+
+/* อีโมจิแบบสติกเกอร์ไดคัท: ขอบขาว + เงา */
+.cg-emoji {
+    display: inline-block;
+    line-height: 1;
+    filter:
+        drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
+        drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
+        drop-shadow(0 4px 4px rgba(60, 40, 30, .22));
+}
+
+/* --- รูป --- */
+.cg-polaroid { background: #fff; padding: 10px 10px 40px; }
+.cg-booth { background: #222; padding: 6px 6px 18px; display: flex; flex-direction: column; gap: 5px; }
+.cg-photo {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #D9D3CB;
+}
+.cg-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cg-booth .cg-photo img { filter: grayscale(1) contrast(1.05); }
+/* ยังไม่มีรูป → ขึ้นลายมือ "รูปเรา" */
+.cg-photo.is-missing img { display: none; }
+.cg-photo.is-missing::after {
+    content: attr(data-label);
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Caveat', 'Mali', cursive;
+    font-size: 20px;
+    color: #FBF8F3;
+}
+.cg-booth .cg-photo.is-missing::after { font-size: 14px; }
+.cg-caption {
+    position: absolute;
+    left: 0; right: 0; bottom: 7px;
+    text-align: center;
+    font-family: 'Caveat', 'Mali', cursive;
+    font-size: 21px;
+    color: #6B4A32;
+}
+
+/* --- ตัวอักษรตัดจากนิตยสาร --- */
+.cg-cut {
+    display: inline-block;
+    padding: 0 6px;
+    margin: 0 1px;
+    line-height: 1.25;
+    font-weight: 700;
+    box-shadow: 0 1px 1px rgba(60, 40, 30, .14), 0 4px 6px -3px rgba(60, 40, 30, .4);
+}
+.cg-cut:nth-child(odd) { transform: rotate(-4deg) translateY(2px); }
+.cg-cut:nth-child(even) { transform: rotate(3deg); }
+
+.cg-hand { font-family: 'Caveat', 'Mali', cursive; }
+.cg-thai { font-family: 'Mali', 'Kanit', sans-serif; }
+
+/* --- ตั๋ว (ช่องใส่รหัส) --- */
+.cg-ticket {
+    background-color: #F6EEE3;
+    padding: 14px 22px 14px 26px;
+    -webkit-mask:
+        radial-gradient(circle at 0 50%, transparent 11px, #000 12px) left / 51% 100% no-repeat,
+        radial-gradient(circle at 100% 50%, transparent 11px, #000 12px) right / 51% 100% no-repeat;
+            mask:
+        radial-gradient(circle at 0 50%, transparent 11px, #000 12px) left / 51% 100% no-repeat,
+        radial-gradient(circle at 100% 50%, transparent 11px, #000 12px) right / 51% 100% no-repeat;
+}
+.cg-ticket::before {   /* รอยปรุ */
+    content: "";
+    position: absolute;
+    top: 10px; bottom: 10px; right: 78px;
+    border-left: 2px dashed #D8C3A8;
+}
+.cg-ticket-label {
+    font: 700 11px 'Courier New', monospace;
+    letter-spacing: 2px;
+    color: #9C7A5B;
+}
+.cg-ticket-input {
+    width: 150px;
+    height: 46px;
+    margin-top: 2px;
+    font: 700 30px 'Courier New', monospace;   /* >= 16px กัน iPhone ซูม */
+    letter-spacing: 10px;
+    color: #4A3B32;
+    background: transparent;
+    border: none;
+    border-bottom: 2px dashed #C9A27E;
+    border-radius: 0;
+    outline: none;
+}
+.cg-ticket-input::placeholder { color: #D8C3A8; }
+.cg-ticket-input:focus { border-bottom-style: solid; }
+.cg-stamp {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    width: 54px;
+    height: 54px;
+    margin-top: -27px;
+    border-radius: 50%;
+    border: 2px solid #C9A27E;
+    color: #9C7A5B;
+    background: transparent;
+    font: 700 13px 'Courier New', monospace;
+    letter-spacing: 1px;
+    transform: rotate(-14deg);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.cg-stamp::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    border: 1px dashed #C9A27E;
+}
+.cg-stamp:active { transform: rotate(-14deg) scale(.92); }
+
+/* --- ป้ายแขวน (คำใบ้) --- */
+.cg-tag {
+    background: #FFFDF8;
+    border: none;
+    padding: 8px 16px 8px 26px;
+    font-family: 'Caveat', 'Mali', cursive;
+    font-size: 20px;
+    color: #6B4A32;
+    clip-path: polygon(14px 0, 100% 0, 100% 100%, 14px 100%, 0 50%);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.cg-tag::before {
+    content: "";
+    position: absolute;
+    left: 12px; top: 50%;
+    width: 7px; height: 7px;
+    margin-top: -3.5px;
+    border-radius: 50%;
+    background: #E8DCCB;
+}
+
+/* ตั๋วสั่นตอนรหัสผิด */
+.cg-wrong { animation: cg-wrong .5s ease-in-out; }
+@keyframes cg-wrong {
+    0%, 100% { translate: 0 0; }
+    20%, 60% { translate: -8px 0; }
+    40%, 80% { translate: 8px 0; }
+}
+
+/* ของประดับที่ลอยเบาๆ หลังแปะเสร็จ */
+.cg-bob { animation: cg-bob 5s ease-in-out infinite; }
+@keyframes cg-bob {
+    0%, 100% { translate: 0 0; }
+    50% { translate: 0 -4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cg-piece, .cg-canvas { transition: none !important; }
+    .cg-bob { animation: none; }
+}
+
+/* =====================================================================
+   กระดาษขาวฉีกขอบ (รูป/ชิ้นส่วนแปะบนกระดาษขาวที่ฉีกมา)
+   ===================================================================== */
+.cg-mount {
+    background-color: #FFFEFB;
+    padding: var(--m, 9px);
+}
+.cg-mount .cg-photo { height: 100%; }
+
+/* เศษกระดาษสีร่วง */
+.cg-confetti {
+    position: absolute;
+    top: -20px;
+    z-index: 50;
+    pointer-events: none;
+    animation: cg-fall linear forwards;
+    box-shadow: 0 1px 1px rgba(60, 40, 30, .15);
+}
+@keyframes cg-fall {
+    0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+    85% { opacity: 1; }
+    100% { transform: translate(var(--dx), 110vh) rotate(var(--rot)); opacity: 0; }
+}
+
+/* =====================================================================
+   ฉาก (ทุกหน้าอยู่ในหน้าเดียว เพลงจะได้เล่นต่อเนื่อง)
+   ===================================================================== */
+.scene {
+    position: fixed;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 1.2s ease, visibility 0s 1.2s;
+    background: var(--bg-color);
+}
+.scene.is-active {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 1.2s ease;
+}
+
+/* ปุ่มเพลง: สติกเกอร์บนกระดาษฉีก */
+#musicBtn {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 12px);
+    right: 12px;
+    z-index: 100;
+    width: 48px;
+    height: 48px;
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .6s;
+    filter: drop-shadow(0 2px 4px rgba(60, 40, 30, .2));
+    -webkit-tap-highlight-color: transparent;
+}
+#musicBtn.is-on { opacity: 1; pointer-events: auto; }
+#musicBtn .cg-mount {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: #A0704C; --m: 0;
+}
+#musicBtn.is-muted .cg-mount { color: #D8CCBF; text-decoration: line-through; }
+#musicBtn:not(.is-muted) .note { display: inline-block; animation: cg-note 1.4s ease-in-out infinite; }
+@keyframes cg-note { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-3px) rotate(6deg); } }
+
+/* นับถอยหลัง: ตัวเลขตัดจากนิตยสารหล่นลงมา */
+.cg-count {
+    font-size: 96px;
+    padding: 0 22px;
+    animation: cg-drop .7s cubic-bezier(.22, .9, .3, 1) both;
+}
+@keyframes cg-drop {
+    from { transform: translateY(-40px) rotate(14deg) scale(1.3); opacity: 0; }
+    to { transform: translateY(0) rotate(-4deg) scale(1); opacity: 1; }
+}
+
+/* =====================================================================
+   หน้าเค้ก: ปัดขึ้นเพื่อเป่าเทียน
+   ===================================================================== */
+#cakeStage { touch-action: none; }
+.flame-wrap {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    transform: skewX(var(--lean, 0deg)) scaleY(var(--stretch, 1));
+    transition: transform .15s ease-out;
+}
+.flame {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: flicker .5s ease-in-out infinite alternate;
+    transition: transform .3s ease, opacity .3s ease;
+}
+@keyframes flicker {
+    from { transform: scale(1, 1) rotate(-3deg); }
+    to { transform: scale(.9, 1.12) rotate(3deg); }
+}
+.candle.is-out .flame { animation: none; transform: scale(0); opacity: 0; }
+.smoke { opacity: 0; transform-box: fill-box; transform-origin: 50% 100%; }
+.candle.is-out .smoke { animation: smoke 1.8s ease-out forwards; }
+@keyframes smoke {
+    0% { opacity: .75; transform: translateY(0) scale(.6); }
+    100% { opacity: 0; transform: translateY(-30px) scale(1.7); }
+}
+.cg-swipe-hint { display: inline-block; animation: cg-swipe 1.8s ease-in-out infinite; }
+@keyframes cg-swipe {
+    0% { transform: translateY(18px); opacity: 0; }
+    25% { opacity: 1; }
+    80% { transform: translateY(-26px); opacity: 0; }
+    100% { opacity: 0; }
+}
+.is-gone { opacity: 0 !important; pointer-events: none; transition: opacity .6s; }
+.cg-reveal { opacity: 0; translate: 0 14px; pointer-events: none; transition: opacity 1.1s ease, translate 1.1s cubic-bezier(.22, .9, .3, 1); }
+.cg-reveal.is-in { opacity: 1; translate: 0 0; pointer-events: auto; }
+
+/* =====================================================================
+   หน้าจดหมาย: ลากตราประทับ → ซองเปิด → คลี่จดหมายทีละทบ
+   ===================================================================== */
+#letterStage { touch-action: none; }
+.env { position: relative; width: 300px; height: 196px; perspective: 900px; }
+.env-back, .env-front, .env-flap { position: absolute; left: 0; width: 100%; }
+.env-back { top: 0; height: 100%; background: #EFE3D2; border-radius: 4px; }
+.env-front {
+    bottom: 0; height: 100%;
+    background: #F6EDE1;
+    clip-path: polygon(0 0, 50% 54%, 100% 0, 100% 100%, 0 100%);
+    z-index: 3;
+}
+.env-flap {
+    top: 0; height: 58%;
+    background: #EADBC6;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    transform-origin: 50% 0;
+    transition: transform 1.1s cubic-bezier(.4, 0, .2, 1), z-index 0s .55s;
+    z-index: 4;
+}
+.env.is-open .env-flap { transform: rotateX(180deg); z-index: 1; }
+.env-letter {
+    position: absolute; left: 16px; right: 16px; top: 10px; height: 170px;
+    background-color: #FFFEFB;
+    background-image: repeating-linear-gradient(to bottom, transparent 0 21px, #EEE7DC 21px 22px);
+    z-index: 2;
+    transition: transform 1.3s cubic-bezier(.22, .9, .3, 1) .7s;
+}
+.env.is-open .env-letter { transform: translateY(-120px); }
+.seal {
+    position: absolute; left: 150px; top: 112px;
+    width: 62px; height: 62px; margin: -31px 0 0 -31px;
+    z-index: 6;
+    border-radius: 48% 52% 46% 54% / 52% 46% 54% 48%;
+    background: radial-gradient(circle at 35% 30%, #C99D72, #A0704C 60%, #6E4529);
+    box-shadow: inset 0 0 0 5px rgba(255, 255, 255, .16), 0 3px 6px rgba(60, 40, 30, .35);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    cursor: grab;
+    touch-action: none;
+    transition: transform .25s;
+    animation: seal-pulse 1.8s ease-in-out infinite;
+}
+.seal.is-dragging { cursor: grabbing; transition: none; animation: none; }
+.seal.is-peeled { transition: transform 1s cubic-bezier(.5, 0, .75, 0), opacity 1s; opacity: 0; animation: none; }
+@keyframes seal-pulse {
+    0%, 100% { box-shadow: inset 0 0 0 5px rgba(255,255,255,.16), 0 3px 6px rgba(60,40,30,.35), 0 0 0 0 rgba(139,94,60,.5); }
+    60% { box-shadow: inset 0 0 0 5px rgba(255,255,255,.16), 0 3px 6px rgba(60,40,30,.35), 0 0 0 14px rgba(139,94,60,0); }
+}
+
+/* จดหมายพับ 3 ทบ */
+#letterPaper {
+    position: absolute;
+    left: 22px;
+    top: 104px;
+    width: 331px;
+    z-index: 30;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(var(--ly, 220px)) scale(.9);
+    transition: transform 1.3s cubic-bezier(.22, .9, .3, 1), opacity .9s;
+    filter: drop-shadow(0 2px 2px rgba(60, 40, 30, .12)) drop-shadow(0 12px 16px rgba(60, 40, 30, .18));
+}
+#letterPaper.is-out { opacity: 1; pointer-events: auto; transform: translateY(var(--ly, 196px)) scale(1); }
+.fold {
+    position: relative;
+    height: 200px;
+    padding: 24px 22px 0 48px;
+    background-color: #FFFEFB;
+    background-image: repeating-linear-gradient(to bottom, transparent 0 27px, #EEE7DC 27px 28px);
+    background-position: 0 21px;   /* เส้นบรรทัดอยู่ใต้ตัวหนังสือพอดี */
+    transform-origin: 50% 0;
+    backface-visibility: hidden;
+}
+.fold::before { content: ""; position: absolute; left: 34px; top: 0; bottom: 0; width: 1px; background: #F2B8C2; }
+.fold + .fold { box-shadow: inset 0 6px 6px -6px rgba(60, 40, 30, .16); }   /* รอยพับ */
+.fold.is-folded { transform: perspective(900px) rotateX(-92deg); }
+.fold.is-unfolding { transition: transform 1.5s cubic-bezier(.22, .9, .3, 1); }
+.fold .line { opacity: 0; translate: 0 6px; transition: opacity 1s ease, translate 1s ease; }
+.fold .line.is-in { opacity: 1; translate: 0 0; }
+.letter-text { font-family: 'Mali', 'Kanit', sans-serif; font-size: 16px; line-height: 28px; color: #4A3B32; }
+.letter-hand { font-family: 'Caveat', 'Mali', cursive; color: #6B4A32; }
+
+@media (prefers-reduced-motion: reduce) {
+    .flame, .cg-swipe-hint, .seal, #musicBtn .note { animation: none !important; }
+}
+
+/* หัวใจวาดเอง (แทนอีโมจิ) */
+.cg-heart { display: inline-block; overflow: visible; filter: drop-shadow(0 3px 3px rgba(60, 40, 30, .22)); }
+
+/* นับถอยหลัง: การ์ดตัวเลขหล่นลงมาซ้อนกัน */
+.count-card {
+    position: absolute;
+    inset: 0;
+    transform: rotate(var(--r, 0deg));
+    animation: count-drop .85s cubic-bezier(.22, .9, .3, 1) both;
+}
+@keyframes count-drop {
+    from { transform: rotate(calc(var(--r, 0deg) + 14deg)) translateY(-70px) scale(1.25); opacity: 0; }
+    to { transform: rotate(var(--r, 0deg)); opacity: 1; }
+}
+.count-go {
+    position: absolute;
+    left: 50%; top: 52%;
+    transform: translate(-50%, -50%) rotate(-7deg);
+    animation: count-stamp .75s cubic-bezier(.2, 1.5, .4, 1) both;
+    z-index: 5;
+}
+@keyframes count-stamp {
+    0% { transform: translate(-50%, -50%) rotate(-20deg) scale(1.9); opacity: 0; }
+    60% { opacity: 1; }
+    100% { transform: translate(-50%, -50%) rotate(-7deg) scale(1); opacity: 1; }
+}
+
+/* =====================================================================
+   ช่อดอกไม้
+   ===================================================================== */
+#bouquet { position: absolute; left: 0; top: 20px; width: 375px; height: 760px; }
+#bouquet .bq-layer { position: absolute; left: 0; top: 0; width: 375px; height: 760px; overflow: visible; pointer-events: none; }
+#bouquet .bq-back, #bouquet .bq-front { filter: drop-shadow(0 2px 2px rgba(60, 40, 30, .12)) drop-shadow(0 10px 14px rgba(60, 40, 30, .14)); }
+#bouquet .bq-back { opacity: 0; transform: translateY(50px); transition: opacity .8s ease, transform 1s cubic-bezier(.22, .9, .3, 1); }
+#bouquet.is-building .bq-back { opacity: 1; transform: none; }
+#bouquet .bq-front { opacity: 0; transform: translateY(90px); transition: opacity .5s ease, transform 1s cubic-bezier(.22, .9, .3, 1); }
+#bouquet.is-wrapping .bq-front { opacity: 1; transform: none; }
+
+/* ดอกไม้จริง: กระดึ๊บๆ เข้ามาทีละดอก (กระโดดเป็นจังหวะ ยืด-ยุบ) */
+#bouquet .bq {
+    position: absolute;
+    opacity: 0;
+    transform-origin: 50% 100%;   /* หมุน/โยกรอบโคนก้าน */
+    filter: drop-shadow(0 2px 2px rgba(60, 40, 30, .16)) drop-shadow(0 6px 8px rgba(60, 40, 30, .12));
+}
+#bouquet .bq img { width: 100%; display: block; transform: rotate(var(--r, 0deg)); transform-origin: 50% 100%; -webkit-user-drag: none; }
+#bouquet.is-building .bq { animation: bq-crawl 2.3s cubic-bezier(.3, .7, .4, 1) var(--d) both; }
+@keyframes bq-crawl {
+    0%   { opacity: 0; transform: translate(var(--sx), var(--sy)) scale(.85); }
+    6%   { opacity: 1; }
+    18%  { transform: translate(calc(var(--sx) * .78), calc(var(--sy) * .78 - 24px)) scale(.94, 1.08); }
+    26%  { transform: translate(calc(var(--sx) * .7), calc(var(--sy) * .7)) scale(1.12, .86); }
+    42%  { transform: translate(calc(var(--sx) * .45), calc(var(--sy) * .45 - 24px)) scale(.94, 1.08); }
+    50%  { transform: translate(calc(var(--sx) * .38), calc(var(--sy) * .38)) scale(1.12, .86); }
+    66%  { transform: translate(calc(var(--sx) * .14), calc(var(--sy) * .14 - 18px)) scale(.96, 1.06); }
+    74%  { transform: translate(calc(var(--sx) * .08), calc(var(--sy) * .08)) scale(1.08, .9); }
+    88%  { transform: translate(0, -6px) scale(.98, 1.03); }
+    100% { opacity: 1; transform: none; }
+}
+#bouquet.is-built .bq { animation: none; opacity: 1; }
+#bouquet.is-built .bq.is-wiggle { animation: bq-wiggle .7s ease-in-out both; }
+@keyframes bq-wiggle {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-7deg) scale(1.06); }
+    60% { transform: rotate(5deg); }
+}
+#bouquet .bq-bow, #bouquet .bq-tag { transform-box: view-box; transform-origin: var(--ox) var(--oy); opacity: 0; }
+#bouquet.is-built .bq-bow { animation: bq-tie .9s cubic-bezier(.2, 1.5, .4, 1) both; }
+#bouquet.is-built .bq-tag { animation: bq-swing 3.2s ease-in-out .7s both; }
+@keyframes bq-tie {
+    from { opacity: 0; transform: scale(.2) rotate(-40deg); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes bq-swing {
+    0% { opacity: 0; transform: rotate(-30deg); }
+    20% { opacity: 1; transform: rotate(16deg); }
+    45% { transform: rotate(-9deg); }
+    70% { transform: rotate(5deg); }
+    100% { opacity: 1; transform: rotate(0); }
+}
+
+/* กลีบดอกไม้ปลิว/ร่วง */
+.cg-petal {
+    position: absolute;
+    z-index: 50;
+    pointer-events: none;
+    border-radius: 60% 0 60% 0;
+    animation: cg-fall linear forwards;
+}
+.cg-burst {
+    position: absolute;
+    z-index: 50;
+    pointer-events: none;
+    border-radius: 60% 0 60% 0;
+    animation: cg-burst .9s ease-out forwards;
+}
+@keyframes cg-burst {
+    from { transform: translate(0, 0) rotate(0); opacity: 1; }
+    to { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    #bouquet .bq, #bouquet .bq-bow, #bouquet .bq-tag, #bouquet .bq-back, #bouquet .bq-front { animation: none !important; opacity: 1 !important; transform: none !important; }
+}
