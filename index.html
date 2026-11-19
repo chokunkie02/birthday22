@@ -8,8 +8,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&family=Mali:wght@400;500;600&family=Caveat:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="scrapbook.css">
+    <script src="scrapbook.js"></script>
     <style>
         /* --- General Styles --- */
         * {
@@ -52,7 +54,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: var(--text-color);
+            background: var(--bg-color);   /* เปลี่ยนหน้าแบบจางเป็นสีขาว */
             opacity: 0;
             z-index: 9999;
             pointer-events: none;
@@ -75,7 +77,7 @@
             outline: none; border-color: var(--heading-color);
             box-shadow: 0 0 0 3px rgba(176, 137, 104, 0.3);
         }
-        #hintModal { background-color: rgba(74, 59, 50, 0.5); }
+        #hintModal { background-color: rgba(255, 255, 255, 0.75); }
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
@@ -87,12 +89,6 @@
         #page-birthday {
             background-color: var(--bg-color);
         }
-        #stars-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
-        .star { position: absolute; background-color: var(--accent-color); border-radius: 50%; animation: twinkle 2s infinite alternate; }
-        @keyframes twinkle {
-            0% { opacity: 0.4; transform: scale(0.8); }
-            100% { opacity: 1; transform: scale(1); box-shadow: 0 0 5px var(--accent-color); }
-        }
         #page-birthday .container { 
             text-align: center; position: relative; z-index: 10; opacity: 0; 
             width: 100%; max-width: 900px;
@@ -103,11 +99,10 @@
             0% { opacity: 0; transform: translateY(40px); }
             100% { opacity: 1; transform: translateY(0); }
         }
-        .happy-text, .birthday-text { font-weight: 300; color: var(--heading-color); letter-spacing: 0.2em; margin-bottom: 0.5rem; min-height: 1.2em; }
-        .happy-text { font-size: clamp(1.8rem, 7vw, 3.5rem); }
-        .birthday-text { font-size: clamp(1.5rem, 5.5vw, 2.8rem); }
-        .text-glow { animation: textGlow 1.5s ease-in-out infinite alternate; }
-        @keyframes textGlow { from { text-shadow: 0 0 5px rgba(176, 137, 104, 0.5); } to { text-shadow: 0 0 10px rgba(176, 137, 104, 0.3); } }
+        .happy-text, .birthday-text { color: var(--heading-color); line-height: 1; min-height: 1em; }
+        .happy-text { font-size: 44px; }
+        .birthday-text { font-size: 52px; margin-top: -4px; }
+        .sb-card--cake { animation: none; padding: 26px 18px 20px; }
         .cake-container { position: relative; margin: 0 auto; opacity: 0; height: 180px; width: 100%; max-width: 240px; overflow: hidden; animation: scaleIn 1s ease-out 2s forwards; }
         @keyframes scaleIn { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
         .cake { width: 100%; position: absolute; bottom: 20px; }
@@ -124,23 +119,49 @@
         .candle:before { content: ""; position: absolute; width: 6px; height: 11px; background: var(--accent-color); border-radius: 50%; opacity: 0; filter: blur(3px); bottom: 34px; left: 50%; transform: translateX(-50%); }
         .candle.blown-out:before { animation: smokePuff 2.5s ease-out forwards; }
         @keyframes smokePuff { 0% { opacity: 0.6; transform: translateX(-50%) translateY(0) scale(0.5); } 100% { opacity: 0; transform: translateX(-50%) translateY(-30px) scale(1.5); } }
-        .action-button { font-size: clamp(1rem, 2.5vw, 1.2rem); font-weight: 500; margin-top: 1rem; position: relative; display: inline-block; border: 3px solid var(--accent-color); border-radius: 50px; padding: 10px 20px; cursor: pointer; box-shadow: 0 8px 25px rgba(176, 137, 104, 0.4); opacity: 0; pointer-events: none; transform: translateY(20px); transition: all 0.8s ease; }
+        .action-button { min-width: 150px; margin-top: 22px; position: relative; z-index: 6; opacity: 0; pointer-events: none; transform: translateY(16px); transition: opacity .8s ease, transform .8s ease; }
         .action-button.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
-        .action-button:hover { transform: translateY(-5px); box-shadow: 0 12px 35px rgba(127, 85, 57, 0.6); }
-        .action-button:active { transform: translateY(-2px); }
+        .action-button.visible:active { transform: scale(.95) rotate(-1deg); }
         .wishes, .thai-message { color: var(--text-color); }
-        .wishes { font-size: clamp(0.9rem, 3vw, 1.3rem); font-weight: 300; letter-spacing: 0.1em; opacity: 0; margin-bottom: 0.5rem; animation: fadeIn 1s ease-out 2.5s forwards; }
-        .thai-message { font-size: clamp(1rem, 3.5vw, 1.5rem); font-weight: 400; letter-spacing: 0.05em; opacity: 0; min-height: 2.5em; animation: fadeIn 1s ease-out 3s forwards; }
+        .wishes { font-size: 22px; color: var(--accent-color); opacity: 0; margin-top: 4px; animation: fadeIn 1s ease-out 2.5s forwards; }
+        .thai-message { font-size: 18px; line-height: 1.5; opacity: 0; min-height: 1.5em; animation: fadeIn 1s ease-out 3s forwards; }
         @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
         
         /* --- Countdown & Start Page Text Color --- */
         #page-countdown h1, #page-start h1 {
             color: var(--heading-color);
         }
+        #page-countdown h1 { font-size: 24px; font-weight: 500; min-height: 1.5em; }
 
-        /* --- Gate Page Text & Button Colors --- */
+        /* --- Gate Page (scrapbook) --- */
         #page-gate h1 {
             color: var(--heading-color);
+            font-size: 22px;
+            font-weight: 500;
+            line-height: 1.5;
+            margin: 2px 0 18px;
+        }
+        #page-gate .sb-pin {
+            width: 190px;
+            height: 52px;
+            font-size: 28px;          /* >= 16px กัน iPhone ซูมตอนแตะช่อง */
+            letter-spacing: 0.55em;
+            text-indent: 0.55em;
+            text-align: center;
+            color: var(--heading-color);
+            background: transparent;
+            border: none;
+            border-bottom: 1.5px dashed var(--accent-color);
+            border-radius: 0;
+            outline: none;
+        }
+        #page-gate .sb-pin::placeholder { color: var(--accent-soft); }
+        #page-gate .sb-pin:focus { border-bottom-style: solid; }
+        #page-gate .sb-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 22px;
         }
         
         /* --- Responsive Adjustments --- */
@@ -158,32 +179,62 @@
 <body>
     <div id="fadeOverlay"></div>
 
-    <div id="page-countdown" class="page-container">
-         <div class="text-center">
-            <h1 id="countdownText" class="text-4xl sm:text-5xl md:text-7xl font-bold hidden"></h1>
-            <button id="startCountdownButton" class="theme-button font-bold py-3 px-8 sm:py-4 sm:px-10 rounded-full text-lg sm:text-xl md:text-2xl active:scale-95 transition-all duration-200 shadow-lg">เริ่ม</button>
+    <div id="page-countdown" class="page-container hidden sb-page">
+        <div class="sb-collage sb-collage--center">
+            <div class="sb-tape sb-tape--top"></div>
+            <div class="sb-card" style="max-width: 260px;">
+                <div class="sb-tape sb-tape--piece"></div>
+                <h1 id="countdownText" class="sb-hand"></h1>
+            </div>
+            <div class="sb-tape sb-tape--bottom"></div>
         </div>
     </div>
 
-    <div id="page-birthday" class="page-container hidden">
+    <div id="page-birthday" class="page-container hidden sb-page">
         <canvas id="fireworks-canvas" style="position:absolute; top:0; left:0; z-index: 5; pointer-events: none;"></canvas>
-        <div id="stars-container"></div>
-        <div class="container">
-            <div class="birthday-wrapper">
-                <div class="happy-text"></div>
-                <div class="birthday-text"></div>
+        <div class="sb-collage sb-collage--center">
+            <div class="sb-tape sb-tape--top"></div>
+
+            <div class="sb-stickers" aria-hidden="true">
+                <span class="sb-sticker" data-kind="heart"   data-x="14" data-y="7"  data-size="40" data-rotate="-12" data-color="#EDB8C4"></span>
+                <span class="sb-sticker" data-kind="star"    data-x="84" data-y="8"  data-size="34" data-rotate="14"  data-color="#F2CD6B"></span>
+                <span class="sb-sticker" data-kind="bow"     data-x="90" data-y="22" data-size="48" data-rotate="18"  data-color="#D9A0B0" data-front></span>
+                <span class="sb-sticker" data-kind="flower"  data-x="7"  data-y="30" data-size="36" data-rotate="0"   data-color="#BFD1B5" data-front></span>
+                <span class="sb-sticker" data-kind="button"  data-x="95" data-y="52" data-size="28" data-rotate="-8"  data-color="#DCC3A5"></span>
+                <span class="sb-sticker" data-kind="heart"   data-x="5"  data-y="60" data-size="30" data-rotate="10"  data-color="#C9A27E"></span>
+                <span class="sb-sticker" data-kind="star"    data-x="90" data-y="74" data-size="30" data-rotate="-16" data-color="#F2CD6B" data-front></span>
+                <span class="sb-sticker" data-kind="flower"  data-x="12" data-y="91" data-size="34" data-rotate="12"  data-color="#F2C6CF"></span>
+                <span class="sb-sticker" data-kind="button"  data-x="86" data-y="93" data-size="28" data-rotate="4"   data-color="#B9D3DB"></span>
+                <span class="sb-sticker" data-kind="sparkle" data-x="42" data-y="5"  data-size="14" data-color="#C9A27E"></span>
+                <span class="sb-sticker" data-kind="sparkle" data-x="64" data-y="7"  data-size="12" data-color="#C9A27E"></span>
+                <span class="sb-sticker" data-kind="sparkle" data-x="4"  data-y="45" data-size="12" data-color="#C9A27E"></span>
+                <span class="sb-sticker" data-kind="sparkle" data-x="96" data-y="38" data-size="12" data-color="#C9A27E"></span>
+                <span class="sb-sticker" data-kind="sparkle" data-x="38" data-y="95" data-size="12" data-color="#C9A27E"></span>
+                <span class="sb-sticker" data-kind="sparkle" data-x="62" data-y="94" data-size="14" data-color="#C9A27E"></span>
             </div>
-            <div class="cake-container">
-                <div class="cake">
-                  <div class="candle"></div>
-                  <div class="top-layer"></div>
-                  <div class="middle-layer"></div>
-                  <div class="bottom-layer"></div>
+
+            <div class="container">
+                <div class="sb-card sb-card--cake" data-sb-origin>
+                    <div class="sb-tape sb-tape--piece"></div>
+                    <div class="birthday-wrapper">
+                        <div class="happy-text sb-script"></div>
+                        <div class="birthday-text sb-script"></div>
+                    </div>
+                    <div class="cake-container">
+                        <div class="cake">
+                          <div class="candle"></div>
+                          <div class="top-layer"></div>
+                          <div class="middle-layer"></div>
+                          <div class="bottom-layer"></div>
+                        </div>
+                    </div>
+                    <div class="wishes sb-script"></div>
+                    <div class="thai-message sb-hand"></div>
                 </div>
+                <button class="action-button sb-btn sb-btn--fill" id="actionButton"></button>
             </div>
-            <div class="wishes"></div>
-            <div class="thai-message"></div>
-            <div class="action-button theme-button" id="actionButton"></div>
+
+            <div class="sb-tape sb-tape--bottom"></div>
         </div>
     </div>
 
@@ -194,23 +245,52 @@
         </div>
     </div>
 
-    <div id="page-gate" class="page-container hidden">
-        <div class="text-center">
-            <h1 class="text-3xl md:text-5xl font-bold mb-6">ถ้าพร้อมแล้วว โปรดใส่รหัส</h1>
-            <div id="pin-container" class="flex justify-center mb-8">
-                <input type="text" id="passwordInput" class="pin-input" inputmode="numeric" pattern="[0-9]{4}" aria-label="รหัสผ่าน 4 หลัก" placeholder="ใส่รหัส 4 หลัก" style="width: 300px; font-size: 1.2rem;">
+    <div id="page-gate" class="page-container sb-page">
+        <div class="sb-collage">
+            <div class="sb-tape sb-tape--top"></div>
+            <p class="sb-label sb-script">happy birthday</p>
+
+            <div class="sb-stickers" aria-hidden="true">
+                <span class="sb-sticker" data-kind="star"    data-x="12" data-y="10" data-size="36" data-rotate="-12" data-color="#F2CD6B"></span>
+                <span class="sb-sticker" data-kind="bow"     data-x="76" data-y="9"  data-size="50" data-rotate="10"  data-color="#D9A0B0"></span>
+                <span class="sb-sticker" data-kind="heart"   data-x="88" data-y="18" data-size="44" data-rotate="14"  data-color="#EDB8C4" data-front></span>
+                <span class="sb-sticker" data-kind="button"  data-x="93" data-y="48" data-size="30" data-rotate="-10" data-color="#DCC3A5"></span>
+                <span class="sb-sticker" data-kind="flower"  data-x="9"  data-y="57" data-size="40" data-rotate="0"   data-color="#BFD1B5" data-front></span>
+                <span class="sb-sticker" data-kind="star"    data-x="26" data-y="71" data-size="28" data-rotate="-18" data-color="#F2CD6B"></span>
+                <span class="sb-sticker" data-kind="heart"   data-x="76" data-y="70" data-size="42" data-rotate="16"  data-color="#C9A27E"></span>
+                <span class="sb-sticker" data-kind="flower"  data-x="50" data-y="80" data-size="36" data-rotate="10"  data-color="#F2C6CF"></span>
+                <span class="sb-sticker" data-kind="button"  data-x="15" data-y="88" data-size="30" data-rotate="6"   data-color="#B9D3DB"></span>
+                <span class="sb-sticker" data-kind="heart"   data-x="88" data-y="88" data-size="28" data-rotate="-6"  data-color="#F6D6DC"></span>
+                <span class="sb-sticker" data-kind="sparkle" data-x="34" data-y="9"  data-size="14" data-color="#C9A27E"></span>
+                <span class="sb-sticker" data-kind="sparkle" data-x="94" data-y="33" data-size="12" data-color="#C9A27E"></span>
+                <span class="sb-sticker" data-kind="sparkle" data-x="5"  data-y="38" data-size="12" data-color="#C9A27E"></span>
+                <span class="sb-sticker" data-kind="sparkle" data-x="56" data-y="66" data-size="14" data-color="#C9A27E"></span>
+                <span class="sb-sticker" data-kind="sparkle" data-x="36" data-y="93" data-size="12" data-color="#C9A27E"></span>
+                <span class="sb-sticker" data-kind="sparkle" data-x="66" data-y="91" data-size="14" data-color="#C9A27E"></span>
             </div>
-            <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
-                <button id="hintButton" class="theme-button font-bold py-3 px-8 rounded-full text-lg active:scale-95 transition-all duration-200 shadow-md w-full sm:w-auto">คำใบ้จ้าาา</button>
-                <button id="confirmButton" class="theme-button font-bold py-3 px-8 rounded-full text-lg active:scale-95 transition-all duration-200 shadow-md w-full sm:w-auto">ยืนยัน</button>
+
+            <div class="sb-card" data-sb-origin>
+                <div class="sb-tape sb-tape--piece"></div>
+                <p class="sb-script" style="font-size: 22px; color: var(--accent-color);">for you</p>
+                <h1 class="sb-hand">ถ้าพร้อมแล้วว<br>โปรดใส่รหัส</h1>
+                <div id="pin-container" class="flex justify-center">
+                    <input type="text" id="passwordInput" class="sb-pin sb-hand" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="รหัสผ่าน 4 หลัก" placeholder="····">
+                </div>
+                <div class="sb-actions">
+                    <button id="hintButton" class="sb-btn">คำใบ้จ้าาา</button>
+                    <button id="confirmButton" class="sb-btn sb-btn--fill">ยืนยัน</button>
+                </div>
             </div>
+
+            <div class="sb-tape sb-tape--bottom"></div>
         </div>
     </div>
 
     <div id="hintModal" class="fixed inset-0 z-[10000] items-center justify-center hidden">
-        <div class="p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-4" style="background-color: var(--surface-color); border: 2px solid var(--accent-color);">
-            <p id="hintText" class="text-2xl font-bold" style="color: var(--heading-color);"></p>
-            <button id="closeModalButton" class="theme-button mt-6 font-bold py-2 px-6 rounded-full text-lg active:scale-95 transition-all duration-200">ปิด</button>
+        <div class="sb-card" style="max-width: 280px; margin: 0 24px; transform: rotate(1.5deg); animation: none;">
+            <div class="sb-tape sb-tape--piece"></div>
+            <p id="hintText" class="sb-hand" style="font-size: 22px; color: var(--heading-color);"></p>
+            <button id="closeModalButton" class="sb-btn" style="margin-top: 18px;">ปิด</button>
         </div>
     </div>
 
@@ -229,17 +309,16 @@
                 songDuration: 30, // seconds - play only first 30 seconds
                 fadeOutDuration: 3000, // milliseconds
                 messages: {
-                    happy: "HAPPY",
-                    birthday: "BIRTHDAY",
+                    happy: "happy",
+                    birthday: "birthday",
                     wish: "Make a wish and celebrate!",
                     thai: "มีความสุขมากๆนะครับ",
                     blowCandle: "เป่าเทียน",
                     goNext: "ไปต่อ"
                 },
                 fireworkColor: theme.getPropertyValue('--accent-color').trim(),
-                confettiColors: ['--accent-color', '--heading-color', '--surface-color']
-                    .map(color => theme.getPropertyValue(color).trim()),
-                starCount: 30
+                // สีพลุ/คอนเฟตตี = สีเดียวกับสติกเกอร์ (พาสเทล)
+                palette: ['#EDB8C4', '#F2CD6B', '#BFD1B5', '#C9A27E', '#B9D3DB', '#F2C6CF']
             };
 
             // =================================================================
@@ -260,7 +339,6 @@
             const closeModalButton = document.getElementById('closeModalButton');
             const hintTextElement = document.getElementById('hintText');
             const countdownTextElement = document.getElementById('countdownText');
-            const startCountdownButton = document.getElementById('startCountdownButton');
             const pinContainer = document.getElementById('pin-container');
             const passwordInput = document.getElementById('passwordInput');
             const fireworksCanvas = document.getElementById('fireworks-canvas');
@@ -279,6 +357,7 @@
             let musicFadeInterval = null;
             let musicStartTime = 0;
             let isAudioReady = false;
+            let pinAccepted = false; // กันตรวจรหัสซ้ำ (พิมพ์ครบ 4 หลัก + กดยืนยันพร้อมกัน)
 
             // =================================================================
             // --- TONE.JS AUDIO SETUP ---
@@ -429,7 +508,8 @@
                     handleBlowCandle();
                 } else if (interactionState === 'go_next') {
                     fadeOutMusic(); // Start fading out music in background
-                    transitionTo('gate'); // ไปหน้าใส่รหัสก่อน
+                    fadeOverlay.classList.add('visible');
+                    setTimeout(() => { window.location.href = 'envelope.html'; }, 1500); // ไปหน้า envelope
                 }
             });
 
@@ -437,29 +517,26 @@
             
             confirmButton.addEventListener('click', handlePinConfirm);
 
-            // ⭐️⭐️⭐️ [START OF CHANGE 1] ⭐️⭐️⭐️
-            startCountdownButton.addEventListener('click', () => {
-                
-                // ปลดล็อก Audio Context ทันทีที่ผู้ใช้กด
-                // เพื่อให้ iOS อนุญาตให้เล่นเสียงได้
-                if (!isAudioReady) {
-                    Tone.start().then(() => {
-                        isAudioReady = true;
-                        console.log('Audio context started on click (iOS fix)');
-                    }).catch((e) => {
-                        console.error('Audio start failed', e);
-                    });
-                }
+            // ปลดล็อก Audio Context ตอนผู้ใช้กดยืนยันรหัส
+            // เพื่อให้ iOS อนุญาตให้เล่นเสียงได้ (ต้องเรียกจาก user gesture)
+            function unlockAudio() {
+                if (isAudioReady) return;
+                Tone.start().then(() => {
+                    isAudioReady = true;
+                }).catch((e) => {
+                    console.error('Audio start failed', e);
+                });
+            }
 
-                startCountdownButton.classList.add('hidden');
-                countdownTextElement.classList.remove('hidden');
-                updateCountdown();
-            });
-            // ⭐️⭐️⭐️ [END OF CHANGE 1] ⭐️⭐️⭐️
+            // แตะช่องรหัสครั้งแรก = ปลดล็อกเสียงไว้ก่อน (iPhone ต้องการการแตะจริง)
+            passwordInput.addEventListener('click', unlockAudio);
+            document.addEventListener('touchend', unlockAudio, { once: true });
 
             passwordInput.addEventListener('input', () => {
                 const digits = passwordInput.value.replace(/[^0-9]/g, '').slice(0, 4);
                 if (passwordInput.value !== digits) passwordInput.value = digits;
+                // คีย์บอร์ดตัวเลขบน iPhone ไม่มีปุ่ม Enter → ครบ 4 หลักแล้วตรวจให้เลย
+                if (digits.length === 4) setTimeout(handlePinConfirm, 250);
             });
 
             // Add Enter key support for password input
@@ -533,8 +610,12 @@
 
             function handlePinConfirm() {
                 const enteredPin = passwordInput.value.trim();
+                if (pinAccepted || enteredPin.length === 0) return;
                 if (enteredPin === CONFIG.correctPin) {
-                    window.location.href = 'envelope.html'; // ไปหน้า envelope
+                    pinAccepted = true;
+                    unlockAudio();
+                    passwordInput.blur();
+                    transitionTo('countdown'); // รหัสถูก → นับถอยหลัง → หน้าเค้ก
                 } else {
                     pinContainer.classList.add('shake');
                     passwordInput.value = '';
@@ -555,9 +636,7 @@
             
             function resetAndStartCountdown() {
                 countdownTimer = CONFIG.countdownDuration;
-                // Show button and hide countdown text initially
-                startCountdownButton.classList.remove('hidden');
-                countdownTextElement.classList.add('hidden');
+                updateCountdown();
             }
 
             // =================================================================
@@ -568,16 +647,14 @@
                 document.querySelector('.wishes').textContent = CONFIG.messages.wish;
                 document.querySelector('.thai-message').textContent = CONFIG.messages.thai;
 
-                createStars();
+                // สติกเกอร์กระจายออกหลังหน้าจางเข้ามาแล้ว
+                setTimeout(() => Scrapbook.init(pages.birthday), 900);
                 
                 setTimeout(() => {
                     const happyText = document.querySelector('.happy-text');
                     const birthdayText = document.querySelector('.birthday-text');
                     typeWriter(happyText, CONFIG.messages.happy, 150, () => {
-                        typeWriter(birthdayText, CONFIG.messages.birthday, 150, () => {
-                            happyText.classList.add('text-glow');
-                            birthdayText.classList.add('text-glow');
-                        });
+                        typeWriter(birthdayText, CONFIG.messages.birthday, 150);
                     });
                 }, 1000);
 
@@ -598,21 +675,6 @@
                     } else if (callback) callback();
                 }
                 type();
-            }
-
-            function createStars() {
-                const container = document.getElementById('stars-container');
-                if (container.children.length > 0) return;
-                for (let i = 0; i < CONFIG.starCount; i++) {
-                    const star = document.createElement('div');
-                    star.className = 'star';
-                    const size = Math.random() * 2 + 1;
-                    star.style.width = `${size}px`; star.style.height = `${size}px`;
-                    star.style.top = `${Math.random() * 100}%`; star.style.left = `${Math.random() * 100}%`;
-                    star.style.animationDelay = `${Math.random() * 2}s`;
-                    star.style.animationDuration = `${Math.random() * 2 + 1}s`;
-                    container.appendChild(star);
-                }
             }
 
             // --- Canvas Fireworks Section ---
@@ -651,6 +713,7 @@
                     this.size = 2;
                     this.gravity = 0.02;
                     this.friction = 0.98;
+                    this.color = CONFIG.palette[Math.floor(Math.random() * CONFIG.palette.length)];
                 }
                 update() {
                     this.vx *= this.friction; this.vy *= this.friction;
@@ -660,7 +723,7 @@
                 }
                 draw() {
                     ctx.globalAlpha = this.life / this.maxLife;
-                    ctx.fillStyle = CONFIG.fireworkColor;
+                    ctx.fillStyle = this.color;
                     ctx.beginPath();
                     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                     ctx.fill();
@@ -676,7 +739,7 @@
                     this.rotation = Math.random() * 360;
                     this.rotationSpeed = (Math.random() - 0.5) * 5;
                     this.size = Math.random() * 8 + 4;
-                    this.color = CONFIG.confettiColors[Math.floor(Math.random() * CONFIG.confettiColors.length)];
+                    this.color = CONFIG.palette[Math.floor(Math.random() * CONFIG.palette.length)];
                     this.life = 180;
                     this.gravity = 0.015;
                     this.friction = 0.995;
@@ -779,10 +842,10 @@
             // =================================================================
             function init() {
                 resizeCanvas();
-                // Start with the countdown page
+                // เริ่มที่หน้าใส่รหัสทันที
                 Object.values(pages).forEach(page => page.classList.add('hidden'));
-                pages.countdown.classList.remove('hidden');
-                resetAndStartCountdown();
+                pages.gate.classList.remove('hidden');
+                Scrapbook.init(pages.gate);
             }
 
             init();

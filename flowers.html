@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ดอกไม้ให้นะ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&family=Mali:wght@400;500;600&family=Caveat:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="scrapbook.css">
+    <script src="scrapbook.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+        body { position: relative; }   /* ให้ของที่ลอย/ร่วงถูกตัดขอบ ไม่ดันหน้าจอให้เลื่อนข้าง */
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background: var(--bg-color);   /* พื้นขาวล้วน */
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        /* ---------- ข้อความด้านบน ---------- */
+        .title {
+            position: absolute;
+            top: calc(env(safe-area-inset-top, 0px) + 9vh);
+            width: 100%;
+            text-align: center;
+            padding: 0 32px;
+            color: var(--heading-color);
+            opacity: 0;
+            transform: translateY(14px);
+            transition: opacity 1s ease, transform 1.2s cubic-bezier(.22, .9, .3, 1);
+            z-index: 5;
+        }
+        .title .sb-card { animation: none; max-width: 290px; padding: 24px 18px 18px; }
+        .title h1 { font-family: 'Mali', 'Kanit', sans-serif; font-size: 24px; font-weight: 500; line-height: 1.4; }
+        .title p { font-family: 'Mali', 'Kanit', sans-serif; font-size: 15px; color: var(--accent-color); margin-top: 4px; }
+        body.bloomed .title { opacity: 1; transform: none; }
+
+        /* ---------- สวนดอกไม้ ---------- */
+        .garden {
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            height: 70vh;
+        }
+
+        /* กระดาษคราฟต์ขอบฉีก เหมือนดอกไม้โผล่ออกมาจากกระดาษห่อ */
+        .ground {
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            height: 14vh;
+            background: #EDDFCC;
+            clip-path: polygon(0 18%, 6% 10%, 12% 16%, 19% 6%, 26% 14%, 33% 8%, 41% 15%, 48% 5%, 56% 13%, 63% 7%, 71% 16%, 78% 9%, 86% 15%, 93% 6%, 100% 12%, 100% 100%, 0 100%);
+            z-index: 4;   /* บังโคนก้านทุกดอก */
+        }
+
+        .flower {
+            position: absolute;
+            bottom: 4vh;
+            transform-origin: bottom center;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .flower .sway {
+            transform-origin: bottom center;
+            animation: sway 4.5s ease-in-out infinite;
+        }
+
+        .flower .stem {
+            width: 3px;
+            margin: 0 auto;
+            background: #9DB487;
+            border-radius: 2px;
+            height: 0;
+            transition: height 1.8s cubic-bezier(.22, .9, .3, 1);   /* ค่อยๆ งอก ไม่เด้ง */
+            position: relative;
+        }
+        .flower .leaf {
+            position: absolute;
+            width: 22px; height: 12px;
+            background: #A9C193;
+            border-radius: 0 100% 0 100%;
+            top: 45%;
+            transform: scale(0);
+            transition: transform 0.9s 1s cubic-bezier(.22, .9, .3, 1);
+        }
+        .flower .leaf.l { right: 4px; transform-origin: right center; border-radius: 100% 0 100% 0; }
+        .flower .leaf.r { left: 4px; transform-origin: left center; top: 60%; }
+
+        .flower .head {
+            position: absolute;
+            left: 50%;
+            bottom: 100%;
+            transform: translate(-50%, 50%) scale(0);
+            transition: transform 1.1s cubic-bezier(.22, .9, .3, 1);
+        }
+        .flower .head svg { display: block; overflow: visible; }
+        .flower .bounce { animation: none; }
+
+        body.bloomed .flower .leaf { transform: scale(1); }
+        body.bloomed .flower .head { transform: translate(-50%, 50%) scale(1); }
+
+        .flower.boing .head { animation: boing 0.8s ease-in-out; }
+
+        .face .eye { animation: blink 4s infinite; transform-box: fill-box; transform-origin: center; }
+
+        @keyframes sway {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+        @keyframes boing {
+            0% { transform: translate(-50%, 50%) scale(1); }
+            35% { transform: translate(-50%, 50%) scale(1.12, 0.92) rotate(-4deg); }
+            70% { transform: translate(-50%, 50%) scale(0.97, 1.05) rotate(2deg); }
+            100% { transform: translate(-50%, 50%) scale(1); }
+        }
+        @keyframes blink {
+            0%, 92%, 100% { transform: scaleY(1); }
+            95% { transform: scaleY(0.1); }
+        }
+
+        /* ---------- หัวใจ/กลีบที่ลอย ---------- */
+        .floaty {
+            position: absolute;
+            pointer-events: none;
+            z-index: 6;
+            animation: floatUp linear forwards;
+        }
+        @keyframes floatUp {
+            0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+            10% { opacity: .9; }
+            85% { opacity: .9; }
+            100% { transform: translate(var(--dx), 110vh) rotate(var(--rot)); opacity: 0; }
+        }
+        .pop {
+            position: absolute;
+            pointer-events: none;
+            z-index: 7;
+            font-size: 22px;
+            animation: pop 1s ease-out forwards;
+        }
+        @keyframes pop {
+            0% { transform: translate(-50%, 0) scale(0.4); opacity: 1; }
+            100% { transform: translate(calc(-50% + var(--dx)), -90px) scale(1.2); opacity: 0; }
+        }
+
+        /* ---------- หน้าเริ่ม (กดให้ดอกไม้บาน) ---------- */
+        #start {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            z-index: 20;
+            background: var(--bg-color);
+            transition: opacity 0.6s ease;
+            padding: 0 16px;
+            text-align: center;
+        }
+        #start.hide { opacity: 0; pointer-events: none; }
+        #start .sb-card { max-width: 270px; }
+        #start .bud { display: inline-block; margin-bottom: 6px; animation: wiggle 3s ease-in-out infinite; }
+        #start p { color: var(--heading-color); font-family: 'Mali', 'Kanit', sans-serif; font-size: 20px; margin-bottom: 18px; }
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-6deg); }
+            50% { transform: rotate(6deg) translateY(-3px); }
+        }
+
+        /* ---------- ปุ่มเพลง ---------- */
+        #music {
+            position: fixed;
+            top: calc(env(safe-area-inset-top, 0px) + 28px); right: 14px;
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            border: 1.5px solid var(--accent-color);
+            font-size: 20px;
+            color: var(--heading-color);
+            cursor: pointer;
+            z-index: 10;
+            background: var(--bg-color);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        body.bloomed #music { opacity: 1; }
+        #music.playing { animation: spin 3s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .hint {
+            position: absolute;
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 26px);
+            width: 100%;
+            text-align: center;
+            font-family: 'Mali', 'Kanit', sans-serif;
+            font-size: 15px;
+            color: var(--heading-color);
+            opacity: 0;
+            z-index: 5;
+            transition: opacity 0.8s 2s ease;
+        }
+        body.bloomed .hint { opacity: 0.75; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .flower .sway, .face .eye, #music.playing, #start .bud { animation: none; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="start">
+        <div class="sb-tape sb-tape--top"></div>
+        <div class="sb-card">
+            <div class="sb-tape sb-tape--piece"></div>
+            <div class="bud" id="bud"></div>
+            <p>มีดอกไม้มาให้นะ</p>
+            <button id="startButton" class="sb-btn sb-btn--fill">กดให้ดอกไม้บาน</button>
+        </div>
+        <div class="sb-tape sb-tape--bottom"></div>
+    </div>
+
+    <div class="sb-tape sb-tape--top"></div>
+    <div class="sb-stickers" aria-hidden="true">
+        <span class="sb-sticker" data-kind="heart"   data-x="10" data-y="9"  data-size="36" data-rotate="-14" data-color="#EDB8C4"></span>
+        <span class="sb-sticker" data-kind="bow"     data-x="88" data-y="31" data-size="44" data-rotate="14"  data-color="#D9A0B0"></span>
+        <span class="sb-sticker" data-kind="star"    data-x="9"  data-y="30" data-size="28" data-rotate="-10" data-color="#F2CD6B"></span>
+        <span class="sb-sticker" data-kind="button"  data-x="78" data-y="7"  data-size="26" data-rotate="8"   data-color="#DCC3A5"></span>
+        <span class="sb-sticker" data-kind="sparkle" data-x="34" data-y="6"  data-size="12" data-color="#C9A27E"></span>
+        <span class="sb-sticker" data-kind="sparkle" data-x="94" data-y="18" data-size="12" data-color="#C9A27E"></span>
+        <span class="sb-sticker" data-kind="sparkle" data-x="5"  data-y="20" data-size="12" data-color="#C9A27E"></span>
+        <span class="sb-sticker" data-kind="sparkle" data-x="60" data-y="36" data-size="14" data-color="#C9A27E"></span>
+    </div>
+
+    <button id="music" aria-label="เปิด/ปิดเพลง">♫</button>
+
+    <div class="title">
+        <div class="sb-card" data-sb-origin>
+            <div class="sb-tape sb-tape--piece"></div>
+            <h1>สุขสันต์วันเกิดนะ 🤎</h1>
+            <p>ดอกไม้ทั้งสวนนี้ให้คนพิเศษ</p>
+        </div>
+    </div>
+
+    <div class="garden" id="garden">
+        <div class="ground"></div>
+    </div>
+    <div class="hint">ลองจิ้มดอกไม้ดูสิ</div>
+
+    <audio id="song" src="song/sound.mp3" loop preload="auto"></audio>
+
+    <script>
+        const garden = document.getElementById('garden');
+        const song = document.getElementById('song');
+        const musicBtn = document.getElementById('music');
+        const start = document.getElementById('start');
+
+        // สีกลีบ: โทนพาสเทลเข้ากับธีมลาเต้
+        const palettes = [
+            { petal: '#F6C9CF', center: '#F2D59B' },
+            { petal: '#FBE3C8', center: '#E8B07A' },
+            { petal: '#F3D4E6', center: '#F5D88A' },
+            { petal: '#FFF4E6', center: '#E9C189' },
+            { petal: '#EBDCC9', center: '#C9A27E' },
+            { petal: '#FAD4C0', center: '#F2D59B' },
+        ];
+
+        // ใส่หน้ายิ้มให้ดอกไม้ไหม (สไตล์สมุดภาพ = ไม่ใส่, เปลี่ยนเป็น true ได้)
+        const SHOW_FACES = false;
+
+        // สร้าง SVG ดอกไม้
+        function flowerSVG(size, { petal, center }, petals, smile) {
+            const r = size / 2;
+            let shapes = '';
+            for (let i = 0; i < petals; i++) {
+                const a = (360 / petals) * i;
+                shapes += `<ellipse cx="0" cy="${-r * 0.55}" rx="${r * 0.32}" ry="${r * 0.48}" fill="${petal}" stroke="rgba(127,85,57,0.28)" stroke-width="1" transform="rotate(${a})"/>`;
+            }
+            const c = r * 0.42;
+            const face = smile ? `
+                <g class="face">
+                    <ellipse class="eye" cx="${-c * 0.35}" cy="${-c * 0.12}" rx="${c * 0.09}" ry="${c * 0.14}" fill="#4A3B32"/>
+                    <ellipse class="eye" cx="${c * 0.35}" cy="${-c * 0.12}" rx="${c * 0.09}" ry="${c * 0.14}" fill="#4A3B32"/>
+                    <ellipse cx="${-c * 0.6}" cy="${c * 0.22}" rx="${c * 0.16}" ry="${c * 0.1}" fill="#F2A7A7" opacity="0.8"/>
+                    <ellipse cx="${c * 0.6}" cy="${c * 0.22}" rx="${c * 0.16}" ry="${c * 0.1}" fill="#F2A7A7" opacity="0.8"/>
+                    <path d="M ${-c * 0.22} ${c * 0.18} Q 0 ${c * 0.45} ${c * 0.22} ${c * 0.18}" stroke="#4A3B32" stroke-width="${Math.max(1.5, c * 0.07)}" fill="none" stroke-linecap="round"/>
+                </g>` : '';
+            return `<svg width="${size}" height="${size}" viewBox="${-r} ${-r} ${size} ${size}">
+                ${shapes}
+                <circle r="${c}" fill="${center}" stroke="rgba(127,85,57,0.18)" stroke-width="1"/>
+                ${face}
+            </svg>`;
+        }
+
+        // วางดอกไม้หลายดอกเรียงกันแบบสุ่มเล็กน้อย
+        function plantFlowers() {
+            const w = window.innerWidth;
+            const count = Math.max(6, Math.min(13, Math.round(w / 85)));
+            const gardenH = garden.clientHeight || window.innerHeight * 0.7;
+
+            for (let i = 0; i < count; i++) {
+                const isFront = i % 2 === 0;
+                const size = Math.round((isFront ? 70 : 54) + Math.random() * 26);
+                const stemH = Math.round(gardenH * (isFront ? 0.22 : 0.38) + Math.random() * gardenH * 0.16);
+                const x = ((i + 0.5) / count) * 100 + (Math.random() * 4 - 2);
+                const pal = palettes[i % palettes.length];
+                const petals = [5, 6, 8][i % 3];
+
+                const flower = document.createElement('div');
+                flower.className = 'flower';
+                flower.style.left = `calc(${x}% - ${size / 2}px)`;
+                flower.style.width = size + 'px';
+                flower.style.zIndex = isFront ? 3 : 1;
+                flower.innerHTML = `
+                    <div class="sway" style="animation-delay:${(-Math.random() * 4.5).toFixed(2)}s; animation-duration:${(4 + Math.random() * 1.5).toFixed(2)}s">
+                        <div class="stem" data-h="${stemH}">
+                            <span class="leaf l"></span>
+                            <span class="leaf r"></span>
+                            <div class="head" style="transition-delay:${(0.6 + i * 0.12).toFixed(2)}s">
+                                <div class="bounce">${flowerSVG(size, pal, petals, SHOW_FACES)}</div>
+                            </div>
+                        </div>
+                    </div>`;
+                flower.querySelector('.stem').style.transitionDelay = (i * 0.12).toFixed(2) + 's';
+                flower.addEventListener('pointerdown', (e) => boing(flower, e));
+                garden.appendChild(flower);
+            }
+        }
+
+        function growFlowers() {
+            document.querySelectorAll('.stem').forEach(stem => {
+                stem.style.height = stem.dataset.h + 'px';
+            });
+            document.body.classList.add('bloomed');
+            // สติกเกอร์ค่อยๆ กระจายออกจากหลังการ์ดหัวข้อ
+            setTimeout(() => Scrapbook.init(document.body), 500);
+            // หลังบานเสร็จ ให้หัวดอกเด้งได้ทันทีโดยไม่มี delay
+            setTimeout(() => {
+                document.querySelectorAll('.flower .head').forEach(h => h.style.transitionDelay = '0s');
+            }, 3000);
+        }
+
+        // จิ้มดอกไม้: เด้งดึ๋ง + มีหัวใจเด้งออกมา
+        function boing(flower, e) {
+            flower.classList.remove('boing');
+            void flower.offsetWidth;
+            flower.classList.add('boing');
+
+            const icons = ['🤎', '💗', '✨', '🌸'];
+            for (let i = 0; i < 3; i++) {
+                const p = document.createElement('div');
+                p.className = 'pop';
+                p.textContent = icons[Math.floor(Math.random() * icons.length)];
+                p.style.left = e.clientX + 'px';
+                p.style.top = (e.clientY - 20) + 'px';
+                p.style.setProperty('--dx', (Math.random() * 80 - 40) + 'px');
+                p.style.animationDelay = (i * 0.08) + 's';
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 1300);
+            }
+        }
+
+        // กลีบดอกไม้ค่อยๆ ร่วงลงมา
+        function spawnFloaty() {
+            const f = document.createElement('div');
+            f.className = 'floaty';
+            const color = palettes[Math.floor(Math.random() * palettes.length)].petal;
+            const w = 8 + Math.random() * 8;
+            f.innerHTML = `<svg width="${w}" height="${w * 1.4}" viewBox="0 0 10 14"><path d="M5 0C9 3 10 9 5 14C0 9 1 3 5 0Z" fill="${color}" stroke="rgba(127,85,57,.25)" stroke-width=".6"/></svg>`;
+            f.style.left = (2 + Math.random() * 92) + 'vw';
+            f.style.top = '-5vh';
+            f.style.setProperty('--dx', (Math.random() * 120 - 60) + 'px');
+            f.style.setProperty('--rot', (Math.random() * 540 - 270) + 'deg');
+            const dur = 9 + Math.random() * 5;
+            f.style.animationDuration = dur + 's';
+            document.body.appendChild(f);
+            setTimeout(() => f.remove(), dur * 1000);
+        }
+
+        function playSong() {
+            song.play().then(() => musicBtn.classList.add('playing')).catch(() => {});
+        }
+
+        musicBtn.addEventListener('click', () => {
+            if (song.paused) {
+                playSong();
+                musicBtn.style.opacity = '';
+            } else {
+                song.pause();
+                musicBtn.classList.remove('playing');
+                musicBtn.style.opacity = '0.45';   // ปิดเพลงอยู่
+            }
+        });
+
+        document.getElementById('startButton').addEventListener('click', () => {
+            playSong(); // การกดปุ่มทำให้เบราว์เซอร์ยอมเล่นเพลง
+            start.classList.add('hide');
+            growFlowers();
+            if (!matchMedia('(prefers-reduced-motion: reduce)').matches) setInterval(spawnFloaty, 900);
+        });
+
+        document.getElementById('bud').innerHTML = flowerSVG(64, palettes[0], 6, false);
+
+        if (document.readyState === 'complete') plantFlowers();
+        else window.addEventListener('load', plantFlowers);
+    </script>
+</body>
+
+</html>

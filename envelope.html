@@ -7,8 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&family=Mali:wght@400;500;600&family=Caveat:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="scrapbook.css">
+    <script src="scrapbook.js"></script>
     <style>
         
         body {
@@ -30,6 +32,14 @@
         .envelope-wrapper {
             perspective: 1000px;
             position: relative;
+            z-index: 5;   /* อยู่เหนือสติกเกอร์ */
+            /* ซองลอยเบาๆ ชวนให้แตะ */
+            animation: env-idle 4.5s ease-in-out infinite;
+        }
+        .envelope-wrapper.is-open { animation: none; }
+        @keyframes env-idle {
+            0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+            50% { transform: translateY(-6px) rotate(0.5deg); }
         }
         .envelope {
             position: relative;
@@ -37,10 +47,18 @@
             height: 200px;
             cursor: pointer;
             transition: transform 0.5s;
-            filter: drop-shadow(0 10px 8px rgba(0,0,0,0.1));
+            filter: drop-shadow(0 8px 10px var(--shadow-color));
+            -webkit-tap-highlight-color: transparent;
         }
-        .envelope:hover {
-            transform: translateY(-10px) scale(1.03);
+        @media (hover: hover) {
+            .envelope:hover { transform: translateY(-8px) scale(1.02); }
+        }
+        .envelope:active { transform: scale(0.97); }
+        @media (max-width: 340px) {
+            .envelope-wrapper { zoom: 0.9; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .envelope-wrapper { animation: none; }
         }
         .envelope.open .top-flap {
             transform: rotateX(180deg);
@@ -52,75 +70,115 @@
         }
         .envelope .left-flap {
             top: 0; left: 0; width: 155px; height: 200px;
-            background-image: linear-gradient(to bottom right, var(--surface-color), var(--accent-color));
+            background: #F1E5D5;   /* กระดาษคราฟต์อ่อน */
             clip-path: polygon(100% 0, 0 50%, 100% 100%);
-            z-index: 2;
+            z-index: 4;   /* ฝาซองด้านหน้า = กระเป๋า (บังจดหมาย) */
         }
         .envelope .right-flap {
             top: 0; right: 0; width: 155px; height: 200px;
-            background-image: linear-gradient(to bottom left, var(--surface-color), var(--accent-color));
+            background: #EDDFCC;
             clip-path: polygon(0 0, 100% 50%, 0 100%);
-            z-index: 2;
+            z-index: 4;   /* ฝาซองด้านหน้า = กระเป๋า (บังจดหมาย) */
         }
         .envelope .bottom-flap {
             bottom: 0; left: 0; width: 300px; height: 105px;
-            background-image: linear-gradient(to top, var(--surface-color), var(--accent-color));
-            clip-path: polygon(0 0, 100% 0, 50% 100%);
-            z-index: 2;
+            background: #F4EADD;
+            clip-path: polygon(0 100%, 100% 100%, 50% 0);
+            top: auto;
+            z-index: 4;   /* ฝาซองด้านหน้า = กระเป๋า (บังจดหมาย) */
         }
         .envelope .top-flap {
             top: 0; left: 0; width: 100%; height: 105px;
-            background-image: linear-gradient(to bottom, var(--accent-color), var(--heading-color));
+            background: #E8D6BF;
             clip-path: polygon(0 0, 100% 0, 50% 100%);
             transform-origin: top;
             transition: transform 0.8s ease-in-out;
             z-index: 5;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         .envelope .front-panel {
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--surface-color);
-            border-radius: 8px;
-            z-index: 4;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
+            background-color: #F6EEE3;
+            border-radius: 6px;
+            z-index: 1;
         }
+        /* ตราประทับขี้ผึ้ง */
         .envelope .seal {
             position: absolute;
-            top: 85px;
+            top: 84px;
             left: 50%;
-            transform: translateX(-50%);
-            width: 30px;
-            height: 30px;
-            background: var(--surface-color);
-            border: 1px solid var(--heading-color);
-            border-radius: 50%;
+            transform: translateX(-50%) rotate(-8deg);
+            width: 40px;
+            height: 40px;
+            background: var(--accent-color);
+            border-radius: 47% 53% 50% 50% / 52% 48% 52% 48%;
+            box-shadow: inset 0 0 0 4px rgba(255,255,255,.18), 0 2px 3px var(--shadow-color);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 16px;
             z-index: 6;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             transition: opacity 0.5s;
+        }
+        .envelope .env-tape {
+            top: -9px;
+            left: auto;
+            right: -18px;
+            margin: 0;
+            width: 64px;
+            transform: rotate(32deg);
+            z-index: 7;
+            transition: opacity .4s;
+        }
+        .envelope.open .env-tape { opacity: 0; }
+
+        .env-instruction {
+            position: relative;
+            z-index: 5;
+            margin-top: 40px;
+            color: var(--heading-color);
+            font-size: 18px;
+            transition: opacity .5s;
+        }
+        .env-instruction small { display: block; font-size: 14px; color: var(--accent-color); }
+
+        /* --- เนื้อหาจดหมาย (ลายมือ วางตามเส้นบรรทัด) --- */
+        .letter-title {
+            color: var(--heading-color);
+            font-size: 34px;
+            line-height: 1.1;
+            margin: 6px 0 10px;
+        }
+        #letter-content { font-family: 'Mali', 'Kanit', sans-serif; }
+        #letter-content p.letter-part {
+            font-size: 16px;
+            line-height: 32px;
+            color: var(--text-color);
         }
         .envelope.open .seal {
             opacity: 0;
         }
 
         /* --- Letter Inside Envelope --- */
+        .letter-inside { scrollbar-width: none; }               /* ยังเลื่อนด้วยนิ้วได้ แค่ซ่อนแถบ */
+        .letter-inside::-webkit-scrollbar { display: none; }
         .letter-inside {
             position: absolute;
             width: 260px;
             height: 180px;
             top: 15px;
             left: 20px;
-            background: linear-gradient(135deg, var(--bg-color) 0%, var(--surface-color) 100%);
-            border: 1px solid var(--surface-color);
-            border-radius: 6px;
-            box-shadow: 0 2px 8px rgba(176, 137, 104, 0.15);
+            /* กระดาษจดหมายมีเส้นบรรทัด */
+            background-color: var(--paper-color);
+            background-image: repeating-linear-gradient(to bottom, transparent 0 31px, var(--paper-line) 31px 32px);
+            background-position: 0 14px;
+            border: 1px solid var(--paper-line);
+            border-radius: 4px;
+            box-shadow: 0 10px 24px -12px var(--shadow-color);
             z-index: 3;
             transform: translateY(0) scale(0.85);
             transition: none;
-            padding: 15px;
+            padding: 22px 20px 84px;
+            -webkit-overflow-scrolling: touch;
             box-sizing: border-box;
             opacity: 0;
             /* เพิ่มเพื่อให้เลื่อนเนื้อหาได้ */
@@ -294,36 +352,59 @@
 </head>
 <body>
 
-    <div id="envelope-view" class="view text-center flex-col items-center justify-center">
-        <div class="envelope-wrapper">
-            <div id="envelope" class="envelope">
+    <div id="envelope-view" class="view text-center">
+      <div class="sb-collage sb-collage--center" style="overflow: visible;">
+        <div class="sb-tape sb-tape--top"></div>
+        <p class="sb-label sb-script">a letter for you</p>
+
+        <div class="sb-stickers" aria-hidden="true">
+            <span class="sb-sticker" data-kind="heart"   data-x="16" data-y="18" data-size="42" data-rotate="-14" data-color="#EDB8C4"></span>
+            <span class="sb-sticker" data-kind="star"    data-x="82" data-y="16" data-size="34" data-rotate="12"  data-color="#F2CD6B"></span>
+            <span class="sb-sticker" data-kind="flower"  data-x="88" data-y="27" data-size="36" data-rotate="0"   data-color="#BFD1B5"></span>
+            <span class="sb-sticker" data-kind="bow"     data-x="14" data-y="29" data-size="50" data-rotate="-10" data-color="#D9A0B0"></span>
+            <span class="sb-sticker" data-kind="button"  data-x="8"  data-y="64" data-size="30" data-rotate="8"   data-color="#DCC3A5"></span>
+            <span class="sb-sticker" data-kind="heart"   data-x="88" data-y="66" data-size="36" data-rotate="14"  data-color="#C9A27E"></span>
+            <span class="sb-sticker" data-kind="star"    data-x="24" data-y="82" data-size="28" data-rotate="-18" data-color="#F2CD6B"></span>
+            <span class="sb-sticker" data-kind="flower"  data-x="74" data-y="85" data-size="34" data-rotate="10"  data-color="#F2C6CF"></span>
+            <span class="sb-sticker" data-kind="sparkle" data-x="40" data-y="14" data-size="14" data-color="#C9A27E"></span>
+            <span class="sb-sticker" data-kind="sparkle" data-x="62" data-y="22" data-size="12" data-color="#C9A27E"></span>
+            <span class="sb-sticker" data-kind="sparkle" data-x="5"  data-y="50" data-size="12" data-color="#C9A27E"></span>
+            <span class="sb-sticker" data-kind="sparkle" data-x="95" data-y="50" data-size="12" data-color="#C9A27E"></span>
+            <span class="sb-sticker" data-kind="sparkle" data-x="48" data-y="90" data-size="14" data-color="#C9A27E"></span>
+        </div>
+
+        <div class="envelope-wrapper" data-sb-origin>
+            <div id="envelope" class="envelope" role="button" aria-label="แตะเพื่อเปิดจดหมาย">
                 <div class="flap left-flap"></div>
                 <div class="flap right-flap"></div>
                 <div class="flap bottom-flap"></div>
                 <div class="flap front-panel"></div>
-                
+
                 <div id="letter-inside" class="letter-inside">
+                    <div class="sb-tape sb-tape--piece" style="top: 0;"></div>
                     <div class="text-center">
-                        <h1 class="text-2xl font-bold mb-3 tracking-tight" style="color: var(--heading-color);">
-                            HAPPY BIRTHDAY🤎
-                        </h1>
+                        <h1 class="letter-title sb-script">happy birthday 🤎</h1>
                     </div>
-                    <div class="text-left mt-3" id="letter-content">
+                    <div class="text-left" id="letter-content">
                         </div>
-                    <div class="text-center mt-auto pt-3 absolute bottom-4 left-0 right-0">
-                        <button id="close-button" class="theme-button mt-4 font-bold py-2 px-4 rounded-full transition duration-300 shadow-md">
+                    <div class="text-center absolute bottom-5 left-0 right-0">
+                        <button id="close-button" class="sb-btn sb-btn--fill">
                             ปิดจดหมาย
                         </button>
                     </div>
                 </div>
-                
+
                 <div class="flap top-flap"></div>
                 <div class="seal">🤎</div>
+                <div class="sb-tape sb-tape--piece env-tape"></div>
             </div>
         </div>
-        <p id="instruction" class="mt-12 text-lg font-semibold transition-opacity duration-500" style="color: var(--heading-color);">
-            ซองจดหมาย<br> <span class="text-sm font-normal">คลิกเพื่อเปิด</span>
+        <p id="instruction" class="env-instruction sb-hand">
+            ซองจดหมาย<small>แตะที่ซองเพื่อเปิด</small>
         </p>
+
+        <div class="sb-tape sb-tape--bottom"></div>
+      </div>
     </div>
 
     <script>
@@ -385,8 +466,8 @@
                 toElement.className = 'letter-part text-left mb-4';
                 toElement.style.cssText = `
                     color: var(--heading-color);
-                    font-size: 0.875rem;
-                    font-style: italic;
+                    font-family: 'Caveat', 'Mali', cursive;
+                    font-size: 22px;
                     opacity: 0;
                     transform: translateY(20px);
                     transition: opacity 0.8s ease-out, transform 0.8s ease-out;
@@ -415,8 +496,8 @@
                 signatureElement.className = 'letter-part text-right mt-4';
                 signatureElement.style.cssText = `
                     color: var(--heading-color);
-                    font-size: 0.875rem;
-                    font-style: italic;
+                    font-family: 'Caveat', 'Mali', cursive;
+                    font-size: 22px;
                     opacity: 0;
                     transform: translateY(20px);
                     transition: opacity 0.8s ease-out, transform 0.8s ease-out;
@@ -484,6 +565,7 @@
             isAnimating = true;
 
             envelope.classList.add('open');
+            envelope.parentElement.classList.add('is-open');
             instruction.style.opacity = '0';
 
             setTimeout(() => {
@@ -531,11 +613,12 @@
                         document.querySelector('.top-flap').style.zIndex = '5';
 
                         setTimeout(() => {
-                            letterInside.classList.remove('letter-sliding-in');
-                            letterContent.textContent = '';
-                            instruction.style.opacity = '1';
-                            isOpened = false;
-                            isAnimating = false;
+                            // อวยพรเสร็จแล้ว ไปหน้าดอกไม้
+                            document.body.style.transition = 'opacity 0.8s ease';
+                            document.body.style.opacity = '0';
+                            setTimeout(() => {
+                                window.location.href = 'flowers.html';
+                            }, 800);
                         }, 800);
                     }, 1200);
                 }, 1000);
@@ -544,6 +627,8 @@
 
         // Initialize when page loads
         window.addEventListener('load', initializeLetter);
+        // สติกเกอร์ค่อยๆ กระจายออกจากหลังซอง
+        Scrapbook.init(document.getElementById('envelope-view'));
     </script>
 
 </body>

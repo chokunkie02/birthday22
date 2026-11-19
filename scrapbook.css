@@ -1,0 +1,163 @@
+/* =====================================================================
+   Scrapbook / collage kit — mobile-first
+   ใช้คู่กับ theme.css และ scrapbook.js
+   ===================================================================== */
+
+.sb-hand { font-family: 'Mali', 'Kanit', cursive; }
+.sb-script { font-family: 'Caveat', 'Mali', cursive; }
+
+/* --- หน้าแบบสมุด: เต็มจอมือถือ, เนื้อหาอยู่ครึ่งบน (คีย์บอร์ดจะไม่บัง) --- */
+.sb-page {
+    height: 100vh;
+    height: 100dvh;
+    padding: 0 !important;
+    align-items: stretch !important;
+    background: var(--bg-color);
+}
+.sb-collage {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    height: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+    padding: calc(env(safe-area-inset-top, 0px) + max(84px, 16vh)) 22px calc(env(safe-area-inset-bottom, 0px) + 40px);
+}
+
+/* หน้าที่ไม่มีช่องพิมพ์ (นับถอยหลัง/เค้ก) → วางการ์ดกลางจอ */
+.sb-collage--center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 40px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 40px);
+}
+
+/* --- เทปลายสก๊อต (gingham washi tape) --- */
+.sb-tape {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 18px;
+    background-color: var(--bg-color);
+    background-image:
+        repeating-linear-gradient(0deg, var(--accent-soft) 0 6px, transparent 6px 12px),
+        repeating-linear-gradient(90deg, var(--accent-soft) 0 6px, transparent 6px 12px);
+    opacity: 0.95;
+    z-index: 4;
+}
+.sb-tape--top { top: env(safe-area-inset-top, 0px); }
+.sb-tape--bottom { bottom: env(safe-area-inset-bottom, 0px); }
+.sb-tape--piece {
+    left: 50%;
+    right: auto;
+    top: -10px;
+    width: 72px;
+    margin-left: -36px;
+    transform: rotate(-3deg);
+    opacity: 0.85;
+}
+.sb-label {
+    position: absolute;
+    top: calc(env(safe-area-inset-top, 0px) + 26px);
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 20px;
+    color: var(--accent-color);
+    z-index: 4;
+}
+
+/* --- การ์ดกระดาษ --- */
+.sb-card {
+    position: relative;
+    z-index: 3;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 320px;
+    padding: 30px 22px 24px;
+    background: var(--paper-color);
+    border: 1px solid var(--paper-line);
+    border-radius: 6px;
+    box-shadow: 0 2px 0 var(--paper-line), 0 10px 24px -14px var(--shadow-color);
+    text-align: center;
+    transform: rotate(-1.2deg);
+    animation: sb-card-in 1s cubic-bezier(.22, .9, .3, 1) both;
+}
+@keyframes sb-card-in {
+    from { opacity: 0; transform: translateY(14px) rotate(-1.2deg); }
+    to   { opacity: 1; transform: translateY(0) rotate(-1.2deg); }
+}
+
+/* --- ปุ่มแบบลายมือ --- */
+.sb-btn {
+    font-family: 'Mali', 'Kanit', sans-serif;
+    font-size: 16px;
+    min-height: 44px;            /* ขนาดนิ้วกดบนมือถือ */
+    padding: 8px 22px;
+    border-radius: 14px 18px 13px 17px;  /* ขอบไม่เท่ากันให้ดูวาดมือ */
+    border: 1.5px solid var(--accent-color);
+    background: var(--bg-color);
+    color: var(--heading-color);
+    cursor: pointer;
+    transition: transform .2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.sb-btn--fill {
+    background: var(--accent-color);
+    color: var(--button-text);
+}
+.sb-btn:active { transform: scale(.95) rotate(-1deg); }
+@media (hover: hover) {
+    .sb-btn:hover { animation: sb-wiggle .5s ease-in-out; }
+}
+@keyframes sb-wiggle {
+    0%, 100% { transform: rotate(0); }
+    30% { transform: rotate(-2deg); }
+    70% { transform: rotate(2deg); }
+}
+
+/* --- สติกเกอร์ ---
+   3 ชั้นแยกกันเพื่อไม่ให้ transform ชนกัน:
+   .sb-sticker  = ตำแหน่ง + กระจายออกตอนเปิด (transform) + parallax (translate)
+   .sb-float    = ลอยเบาๆ ตลอดเวลา */
+.sb-stickers { position: absolute; inset: 0; pointer-events: none; }  /* ไม่ใส่ z-index: ให้สติกเกอร์บางชิ้นแปะทับการ์ดได้ */
+.sb-sticker {
+    position: absolute;
+    width: var(--s, 40px);
+    height: var(--s, 40px);
+    margin: calc(var(--s, 40px) / -2) 0 0 calc(var(--s, 40px) / -2);
+    transform: rotate(var(--r, 0deg));
+    translate: 0 var(--py, 0px);
+    transition: transform 1.8s cubic-bezier(.22, .9, .3, 1), opacity .7s ease;
+    will-change: transform;
+    z-index: 2;
+}
+.sb-sticker[data-front] { z-index: 4; }   /* แปะทับขอบการ์ด */
+.sb-sticker.is-gathered {
+    transform: translate(var(--dx, 0px), var(--dy, 0px)) rotate(0deg) scale(.3);
+    opacity: 0;
+    transition: none;
+}
+.sb-sticker svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.sb-float {
+    display: block;
+    width: 100%;
+    height: 100%;
+    animation: sb-float var(--fd, 5s) ease-in-out var(--fdl, 0s) infinite;
+}
+@keyframes sb-float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-4px) rotate(2.5deg); }
+}
+.sb-sticker[data-kind="sparkle"] .sb-float { animation-name: sb-twinkle; }
+@keyframes sb-twinkle {
+    0%, 100% { opacity: .25; transform: scale(.8); }
+    50% { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sb-card, .sb-float { animation: none !important; }
+    .sb-sticker { transition: none !important; }
+}

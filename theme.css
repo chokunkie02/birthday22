@@ -1,7 +1,11 @@
 :root {
-    --bg-color: #FFFDF9;
+    /* ขาว + ลาเต้ : พื้นขาวเป็นหลัก สีลาเต้เป็นสีเน้นสีเดียว */
+    --bg-color: #FFFFFF;
+    --paper-color: #FFFDF9;
+    --paper-line: #EDE5DA;
     --surface-color: #F5EDE0;
-    --accent-color: #B08968;
+    --accent-soft: #EBDCC9;
+    --accent-color: #C9A27E;
     --heading-color: #7F5539;
     --text-color: #4A3B32;
     --shadow-color: rgba(127, 85, 57, 0.2);
