@@ -1,0 +1,23 @@
+:root {
+    --bg-color: #FFFDF9;
+    --surface-color: #F5EDE0;
+    --accent-color: #B08968;
+    --heading-color: #7F5539;
+    --text-color: #4A3B32;
+    --shadow-color: rgba(127, 85, 57, 0.2);
+    --button-text: #302219;
+}
+
+body {
+    color: var(--text-color);
+}
+
+.theme-button {
+    background-color: var(--accent-color);
+    color: var(--button-text);
+}
+
+.theme-button:hover {
+    background-color: var(--heading-color);
+    color: var(--bg-color);
+}

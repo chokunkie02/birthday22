@@ -8,19 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme.css">
     <style>
-        :root {
-            /* --- Color Scheme (Same as envelope.html) --- */
-            --bg-color: #F8F6FF;
-            --primary-text: #8B5DFF;
-            --darker-text: #6A3ED4;
-            --primary-accent: #B794F6;
-            --envelope-light: #E6D8FF;
-            --envelope-dark: #9B6BFF;
-            --letter-text: #2D3748;
-            --letter-title: #1A202C;
-            --letter-signature: #553C9A;
-        }
         
         body {
             font-family: 'Kanit', sans-serif;
@@ -35,7 +24,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background-color: #000;
+            background-color: var(--text-color);
             opacity: 0;
             pointer-events: none;
             z-index: 9999;
@@ -57,7 +46,7 @@
 
         /* --- Thought View Styles --- */
         #thought-view {
-            background-color: #F8F6FF;
+            background-color: var(--bg-color);
             position: relative;
         }
 
@@ -65,7 +54,7 @@
         .typewriter {
             /* overflow: hidden; */ 
             /* white-space: nowrap; */ 
-            border-right: 3px solid var(--primary-text);
+            border-right: 3px solid var(--accent-color);
             
             animation: blink-caret 0.75s step-end infinite;
             
@@ -81,7 +70,7 @@
 
         @keyframes blink-caret {
             from, to { border-color: transparent; }
-            50% { border-color: var(--primary-text); }
+            50% { border-color: var(--accent-color); }
         }
 
         /* Floating particles */
@@ -114,7 +103,7 @@
             position: absolute;
             pointer-events: none;
             font-size: 16px;
-            color: #FF69B4; /* <--- แก้เป็นแบบนี้ครับ */
+            color: var(--accent-color);
             animation: float-heart 3s ease-out forwards;
         }
         @keyframes float-heart {
@@ -131,7 +120,7 @@
         /* Thought text animations */
         #thought-text {
             transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
-            text-shadow: 1px 1px 3px rgba(139, 93, 255, 0.1);
+            text-shadow: 1px 1px 3px rgba(176, 137, 104, 0.1);
             font-family: 'Kanit', sans-serif;
             font-weight: 400;
         }
@@ -173,9 +162,9 @@
 
         /* Soft glow effect */
         .soft-glow {
-            text-shadow: 0 0 20px rgba(139, 93, 255, 0.3), 
-                         0 0 40px rgba(139, 93, 255, 0.2),
-                         1px 1px 3px rgba(139, 93, 255, 0.1);
+            text-shadow: 0 0 20px rgba(176, 137, 104, 0.3),
+                         0 0 40px rgba(176, 137, 104, 0.2),
+                         1px 1px 3px rgba(176, 137, 104, 0.1);
         }
 
         /* === โค้ดสำหรับมือถือ === */
@@ -196,7 +185,7 @@
 
     </style>
 </head>
-<body style="background-color: #F8F6FF;">
+<body>
 
     <audio id="background-music" loop>
         <source src="song/sound.mp3" type="audio/mpeg">
@@ -204,8 +193,8 @@
     </audio>
     <div id="transition-overlay"></div>
 
-    <div id="start-modal" class="fixed inset-0 z-[10001] flex items-center justify-center" style="background-color: rgba(248, 246, 255, 0.9);">
-        <button id="start-thought-button" class="text-white font-bold py-3 px-8 sm:py-4 sm:px-10 rounded-full text-lg sm:text-xl md:text-2xl active:scale-95 transition-all duration-200 shadow-lg" style="background-color: var(--primary-text);" onmouseover="this.style.backgroundColor='var(--darker-text)'" onmouseout="this.style.backgroundColor='var(--primary-text)'">
+    <div id="start-modal" class="fixed inset-0 z-[10001] flex items-center justify-center" style="background-color: rgba(255, 253, 249, 0.9);">
+        <button id="start-thought-button" class="theme-button font-bold py-3 px-8 sm:py-4 sm:px-10 rounded-full text-lg sm:text-xl md:text-2xl active:scale-95 transition-all duration-200 shadow-lg">
             กดเพื่ออ่าน
         </button>
     </div>
@@ -214,10 +203,10 @@
             </div>
         
         <div class="text-center w-full px-8 relative z-10" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-        <div id="thought-text" class="font-medium leading-relaxed" style="color: var(--primary-text); min-height: 1.5em; font-size: clamp(1.5rem, 5vw, 2.5rem); letter-spacing: 0.05em;">
+        <div id="thought-text" class="font-medium leading-relaxed" style="min-height: 1.5em; font-size: clamp(1.5rem, 5vw, 2.5rem); letter-spacing: 0.05em;">
                 </div>
             
-            <button id="continue-button" class="text-white font-bold py-3 px-6 rounded-full transition duration-300 shadow-lg opacity-0 pointer-events-none" style="background-color: var(--primary-text); transform: scale(0.8); margin-top: 2rem;" onmouseover="this.style.backgroundColor='var(--darker-text)'" onmouseout="this.style.backgroundColor='var(--primary-text)'">
+            <button id="continue-button" class="theme-button font-bold py-3 px-6 rounded-full transition duration-300 shadow-lg opacity-0 pointer-events-none" style="transform: scale(0.8); margin-top: 2rem;">
                 กลับสู่หน้าแรก
             </button>
         </div>
@@ -299,7 +288,7 @@
         
         // Create floating particles
         function createParticle() {
-            const particles = ['✨', '💫', '⭐', '🌟', '💜', '💙', '🤍'];
+            const particles = ['✨', '💫', '⭐', '🌟', '🤎', '🤍'];
             const particle = document.createElement('div');
             particle.className = 'particle';
             particle.textContent = particles[Math.floor(Math.random() * particles.length)];
@@ -318,7 +307,7 @@
 
         // Create heart particles for special moments
         function createHeartParticle(x, y) {
-            const hearts = ['💜', '💖', '💕', '💗'];
+            const hearts = ['🤎', '🤍'];
             const heart = document.createElement('div');
             heart.className = 'heart-particle';
             heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];

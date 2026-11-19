@@ -8,20 +8,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme.css">
     <style>
         /* --- General Styles --- */
-        :root {
-            /* --- Updated Color Scheme v2 --- */
-            --bg-color: #F8F6FF;         /* พื้นหลังหลัก */
-            --primary-text: #8B5DFF;     /* ข้อความหลัก */
-            --darker-text: #6A3ED4;      /* ข้อความเข้ม */
-            --primary-accent: #B794F6;   /* สีเน้น/ดาว */
-            --firework-color: #8B5DFF;   /* สีพลุ */
-            --cake-light: #E6D8FF;       /* สีเค้กอ่อน */
-            --cake-dark: #9B6BFF;        /* สีเค้กกลาง */
-        }
         * {
             margin: 0;
             padding: 0;
@@ -62,7 +52,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: black;
+            background: var(--text-color);
             opacity: 0;
             z-index: 9999;
             pointer-events: none;
@@ -78,14 +68,14 @@
         }
         .pin-input {
             width: 80px; height: 60px; text-align: center; font-size: 1.5rem;
-            border: 2px solid var(--primary-accent); border-radius: 0.5rem; margin: 0 0.25rem;
-            background-color: #ffffff; color: var(--darker-text);
+            border: 2px solid var(--accent-color); border-radius: 0.5rem; margin: 0 0.25rem;
+            background-color: var(--surface-color); color: var(--text-color);
         }
         .pin-input:focus {
-            outline: none; border-color: var(--primary-text);
-            box-shadow: 0 0 0 3px rgba(139, 93, 255, 0.3);
+            outline: none; border-color: var(--heading-color);
+            box-shadow: 0 0 0 3px rgba(176, 137, 104, 0.3);
         }
-        #hintModal { background-color: rgba(0, 0, 0, 0.5); }
+        #hintModal { background-color: rgba(74, 59, 50, 0.5); }
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
@@ -95,14 +85,13 @@
 
         /* --- Birthday Page --- */
         #page-birthday {
-            font-family: 'Mitr', sans-serif;
             background-color: var(--bg-color);
         }
         #stars-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
-        .star { position: absolute; background-color: var(--primary-accent); border-radius: 50%; animation: twinkle 2s infinite alternate; }
+        .star { position: absolute; background-color: var(--accent-color); border-radius: 50%; animation: twinkle 2s infinite alternate; }
         @keyframes twinkle {
             0% { opacity: 0.4; transform: scale(0.8); }
-            100% { opacity: 1; transform: scale(1); box-shadow: 0 0 5px var(--primary-accent); }
+            100% { opacity: 1; transform: scale(1); box-shadow: 0 0 5px var(--accent-color); }
         }
         #page-birthday .container { 
             text-align: center; position: relative; z-index: 10; opacity: 0; 
@@ -114,62 +103,44 @@
             0% { opacity: 0; transform: translateY(40px); }
             100% { opacity: 1; transform: translateY(0); }
         }
-        .happy-text, .birthday-text { font-weight: 300; color: var(--primary-text); letter-spacing: 0.2em; margin-bottom: 0.5rem; min-height: 1.2em; }
+        .happy-text, .birthday-text { font-weight: 300; color: var(--heading-color); letter-spacing: 0.2em; margin-bottom: 0.5rem; min-height: 1.2em; }
         .happy-text { font-size: clamp(1.8rem, 7vw, 3.5rem); }
         .birthday-text { font-size: clamp(1.5rem, 5.5vw, 2.8rem); }
         .text-glow { animation: textGlow 1.5s ease-in-out infinite alternate; }
-        @keyframes textGlow { from { text-shadow: 0 0 5px rgba(139, 93, 255, 0.5); } to { text-shadow: 0 0 10px rgba(139, 93, 255, 0.3); } }
+        @keyframes textGlow { from { text-shadow: 0 0 5px rgba(176, 137, 104, 0.5); } to { text-shadow: 0 0 10px rgba(176, 137, 104, 0.3); } }
         .cake-container { position: relative; margin: 0 auto; opacity: 0; height: 180px; width: 100%; max-width: 240px; overflow: hidden; animation: scaleIn 1s ease-out 2s forwards; }
         @keyframes scaleIn { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
         .cake { width: 100%; position: absolute; bottom: 20px; }
-        .bottom-layer, .top-layer, .middle-layer { height: 48px; width: 144px; position: relative; margin: auto; background-repeat: repeat; background-size: 100% 100%, 36px 60px; background-position: 18px 0; background-image: linear-gradient( transparent 30px, var(--cake-light) 30px, var(--cake-light) 36px, transparent 36px ), radial-gradient(circle at 18px 3px, var(--cake-dark) 18px, var(--cake-light) 19px); }
+        .bottom-layer, .top-layer, .middle-layer { height: 48px; width: 144px; position: relative; margin: auto; background-repeat: repeat; background-size: 100% 100%, 36px 60px; background-position: 18px 0; background-image: linear-gradient( transparent 30px, var(--surface-color) 30px, var(--surface-color) 36px, transparent 36px ), radial-gradient(circle at 18px 3px, var(--accent-color) 18px, var(--surface-color) 19px); }
         .middle-layer { transform: scale(0.85); top: 43px; animation: rise-1 2s forwards; }
         @keyframes rise-1 { 100% { top: 5px; } }
         .top-layer { transform: scale(0.7); top: 86px; animation: rise-2 2s 2s forwards; }
         @keyframes rise-2 { 100% { top: 16px; } }
-        .candle { background: repeating-linear-gradient( 45deg, var(--cake-dark) 0, var(--cake-dark) 4px, var(--cake-light) 4px, var(--cake-light) 8px ); height: 27px; width: 9px; position: absolute; margin: auto; left: 0; right: 0; bottom: 0; animation: rise-3 1s 4s forwards; }
+        .candle { background: repeating-linear-gradient( 45deg, var(--accent-color) 0, var(--accent-color) 4px, var(--surface-color) 4px, var(--surface-color) 8px ); height: 27px; width: 9px; position: absolute; margin: auto; left: 0; right: 0; bottom: 0; animation: rise-3 1s 4s forwards; }
         @keyframes rise-3 { 100% { bottom: 121px; } }
-        .candle:after { content: ""; position: absolute; height: 10px; width: 10px; background-color: #ffee54; border-radius: 0 50% 50% 50%; transform: scale(0) rotate(45deg); bottom: 30px; left: -0.5px; animation: flame 1.5s 5s forwards; transition: all 1.2s ease-out; }
+        .candle:after { content: ""; position: absolute; height: 10px; width: 10px; background-color: var(--accent-color); border-radius: 0 50% 50% 50%; transform: scale(0) rotate(45deg); bottom: 30px; left: -0.5px; animation: flame 1.5s 5s forwards; transition: all 1.2s ease-out; }
         @keyframes flame { 100% { transform: scale(1) rotate(45deg); } }
         .candle.blown-out:after { transform: scale(0) rotate(45deg) !important; opacity: 0; }
-        .candle:before { content: ""; position: absolute; width: 6px; height: 11px; background: var(--primary-accent); border-radius: 50%; opacity: 0; filter: blur(3px); bottom: 34px; left: 50%; transform: translateX(-50%); }
+        .candle:before { content: ""; position: absolute; width: 6px; height: 11px; background: var(--accent-color); border-radius: 50%; opacity: 0; filter: blur(3px); bottom: 34px; left: 50%; transform: translateX(-50%); }
         .candle.blown-out:before { animation: smokePuff 2.5s ease-out forwards; }
         @keyframes smokePuff { 0% { opacity: 0.6; transform: translateX(-50%) translateY(0) scale(0.5); } 100% { opacity: 0; transform: translateX(-50%) translateY(-30px) scale(1.5); } }
-        .action-button { font-size: clamp(1rem, 2.5vw, 1.2rem); font-weight: 500; color: white; margin-top: 1rem; position: relative; display: inline-block; background: var(--primary-text); border: 3px solid var(--primary-text); border-radius: 50px; padding: 10px 20px; cursor: pointer; box-shadow: 0 8px 25px rgba(139, 93, 255, 0.4); opacity: 0; pointer-events: none; transform: translateY(20px); transition: all 0.8s ease; }
+        .action-button { font-size: clamp(1rem, 2.5vw, 1.2rem); font-weight: 500; margin-top: 1rem; position: relative; display: inline-block; border: 3px solid var(--accent-color); border-radius: 50px; padding: 10px 20px; cursor: pointer; box-shadow: 0 8px 25px rgba(176, 137, 104, 0.4); opacity: 0; pointer-events: none; transform: translateY(20px); transition: all 0.8s ease; }
         .action-button.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
-        .action-button:hover { transform: translateY(-5px); box-shadow: 0 12px 35px rgba(106, 62, 212, 0.6); background: var(--darker-text); }
+        .action-button:hover { transform: translateY(-5px); box-shadow: 0 12px 35px rgba(127, 85, 57, 0.6); }
         .action-button:active { transform: translateY(-2px); }
-        .wishes, .thai-message { color: var(--primary-text); }
+        .wishes, .thai-message { color: var(--text-color); }
         .wishes { font-size: clamp(0.9rem, 3vw, 1.3rem); font-weight: 300; letter-spacing: 0.1em; opacity: 0; margin-bottom: 0.5rem; animation: fadeIn 1s ease-out 2.5s forwards; }
         .thai-message { font-size: clamp(1rem, 3.5vw, 1.5rem); font-weight: 400; letter-spacing: 0.05em; opacity: 0; min-height: 2.5em; animation: fadeIn 1s ease-out 3s forwards; }
         @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
         
         /* --- Countdown & Start Page Text Color --- */
         #page-countdown h1, #page-start h1 {
-            color: var(--primary-text);
-        }
-        #page-start #readyButton {
-            background-color: var(--primary-text);
-        }
-        #page-start #readyButton:hover {
-            background-color: var(--darker-text);
+            color: var(--heading-color);
         }
 
         /* --- Gate Page Text & Button Colors --- */
         #page-gate h1 {
-            color: var(--darker-text);
-        }
-        #confirmButton {
-            background-color: var(--primary-text);
-        }
-        #confirmButton:hover {
-            background-color: var(--darker-text);
-        }
-        #hintButton {
-            background-color: var(--primary-accent);
-        }
-        #hintButton:hover {
-            background-color: var(--primary-text);
+            color: var(--heading-color);
         }
         
         /* --- Responsive Adjustments --- */
@@ -190,7 +161,7 @@
     <div id="page-countdown" class="page-container">
          <div class="text-center">
             <h1 id="countdownText" class="text-4xl sm:text-5xl md:text-7xl font-bold hidden"></h1>
-            <button id="startCountdownButton" class="text-white font-bold py-3 px-8 sm:py-4 sm:px-10 rounded-full text-lg sm:text-xl md:text-2xl active:scale-95 transition-all duration-200 shadow-lg" style="background-color: var(--primary-text);" onmouseover="this.style.backgroundColor='var(--darker-text)'" onmouseout="this.style.backgroundColor='var(--primary-text)'">เริ่ม</button>
+            <button id="startCountdownButton" class="theme-button font-bold py-3 px-8 sm:py-4 sm:px-10 rounded-full text-lg sm:text-xl md:text-2xl active:scale-95 transition-all duration-200 shadow-lg">เริ่ม</button>
         </div>
     </div>
 
@@ -212,14 +183,14 @@
             </div>
             <div class="wishes"></div>
             <div class="thai-message"></div>
-            <div class="action-button" id="actionButton"></div>
+            <div class="action-button theme-button" id="actionButton"></div>
         </div>
     </div>
 
     <div id="page-start" class="page-container hidden">
         <div class="text-center">
             <h1 class="text-4xl sm:text-5xl md:text-7xl font-bold mb-8">พร้อมไหม</h1>
-            <button id="readyButton" class="text-white font-bold py-3 px-8 sm:py-4 sm:px-10 rounded-full text-lg sm:text-xl md:text-2xl active:scale-95 transition-all duration-200 shadow-lg">พร้อม</button>
+            <button id="readyButton" class="theme-button font-bold py-3 px-8 sm:py-4 sm:px-10 rounded-full text-lg sm:text-xl md:text-2xl active:scale-95 transition-all duration-200 shadow-lg">พร้อม</button>
         </div>
     </div>
 
@@ -227,19 +198,19 @@
         <div class="text-center">
             <h1 class="text-3xl md:text-5xl font-bold mb-6">ถ้าพร้อมแล้วว โปรดใส่รหัส</h1>
             <div id="pin-container" class="flex justify-center mb-8">
-                <input type="text" id="passwordInput" class="pin-input" placeholder="ใส่รหัสที่นี่" style="width: 300px; font-size: 1.2rem;">
+                <input type="text" id="passwordInput" class="pin-input" inputmode="numeric" pattern="[0-9]{4}" aria-label="รหัสผ่าน 4 หลัก" placeholder="ใส่รหัส 4 หลัก" style="width: 300px; font-size: 1.2rem;">
             </div>
             <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
-                <button id="hintButton" class="text-white font-bold py-3 px-8 rounded-full text-lg active:scale-95 transition-all duration-200 shadow-md w-full sm:w-auto">คำใบ้จ้าาา</button>
-                <button id="confirmButton" class="text-white font-bold py-3 px-8 rounded-full text-lg active:scale-95 transition-all duration-200 shadow-md w-full sm:w-auto">ยืนยัน</button>
+                <button id="hintButton" class="theme-button font-bold py-3 px-8 rounded-full text-lg active:scale-95 transition-all duration-200 shadow-md w-full sm:w-auto">คำใบ้จ้าาา</button>
+                <button id="confirmButton" class="theme-button font-bold py-3 px-8 rounded-full text-lg active:scale-95 transition-all duration-200 shadow-md w-full sm:w-auto">ยืนยัน</button>
             </div>
         </div>
     </div>
 
     <div id="hintModal" class="fixed inset-0 z-[10000] items-center justify-center hidden">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-4" style="background-color: var(--bg-color); border: 2px solid var(--primary-accent);">
-            <p id="hintText" class="text-2xl font-bold" style="color: var(--darker-text);"></p>
-            <button id="closeModalButton" class="mt-6 text-white font-bold py-2 px-6 rounded-full text-lg active:scale-95 transition-all duration-200" style="background-color: var(--primary-text);" onmouseover="this.style.backgroundColor='var(--darker-text)'" onmouseout="this.style.backgroundColor='var(--primary-text)'">ปิด</button>
+        <div class="p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-4" style="background-color: var(--surface-color); border: 2px solid var(--accent-color);">
+            <p id="hintText" class="text-2xl font-bold" style="color: var(--heading-color);"></p>
+            <button id="closeModalButton" class="theme-button mt-6 font-bold py-2 px-6 rounded-full text-lg active:scale-95 transition-all duration-200">ปิด</button>
         </div>
     </div>
 
@@ -250,9 +221,10 @@
             // =================================================================
             // --- CONFIGURATION ---
             // =================================================================
+            const theme = getComputedStyle(document.documentElement);
             const CONFIG = {
-                correctPin: "ชมพู่น่ารักที่สุดในโลกbyพี่โชกุน",
-                hintText: "ใส่ข้อความที่รักที่สุดในโลก",
+                correctPin: "2211",
+                hintText: "อยู่ในกล่องไง",
                 countdownDuration: 3, // seconds
                 songDuration: 30, // seconds - play only first 30 seconds
                 fadeOutDuration: 3000, // milliseconds
@@ -264,7 +236,9 @@
                     blowCandle: "เป่าเทียน",
                     goNext: "ไปต่อ"
                 },
-                fireworkColor: getComputedStyle(document.documentElement).getPropertyValue('--firework-color').trim(),
+                fireworkColor: theme.getPropertyValue('--accent-color').trim(),
+                confettiColors: ['--accent-color', '--heading-color', '--surface-color']
+                    .map(color => theme.getPropertyValue(color).trim()),
                 starCount: 30
             };
 
@@ -483,6 +457,11 @@
             });
             // ⭐️⭐️⭐️ [END OF CHANGE 1] ⭐️⭐️⭐️
 
+            passwordInput.addEventListener('input', () => {
+                const digits = passwordInput.value.replace(/[^0-9]/g, '').slice(0, 4);
+                if (passwordInput.value !== digits) passwordInput.value = digits;
+            });
+
             // Add Enter key support for password input
             passwordInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
@@ -697,8 +676,7 @@
                     this.rotation = Math.random() * 360;
                     this.rotationSpeed = (Math.random() - 0.5) * 5;
                     this.size = Math.random() * 8 + 4;
-                    this.colors = ['#8B5DFF', '#B794F6', '#E6D8FF', '#9B6BFF', '#FFD700', '#FF69B4'];
-                    this.color = this.colors[Math.floor(Math.random() * this.colors.length)];
+                    this.color = CONFIG.confettiColors[Math.floor(Math.random() * CONFIG.confettiColors.length)];
                     this.life = 180;
                     this.gravity = 0.015;
                     this.friction = 0.995;
