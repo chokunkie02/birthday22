@@ -265,7 +265,13 @@
 
     function play(name) {
         const tr = tracks[name];
-        if (!tr || current === name) return;
+        if (current === name) return;
+        if (!tr) {   // หน้าที่ไม่มีเพลงของตัวเอง (เช่นหน้าแผ่นเสียง) → เฟดเพลงเดิมออกให้เงียบ
+            const old = current && tracks[current];
+            if (old) { old.bus.volume.rampTo(-60, 1.4); setTimeout(() => { if (current !== name) return; old.parts.forEach(p => p.stop()); old.bus.volume.value = -Infinity; }, 1500); }
+            current = name;
+            return;
+        }
         const old = current && tracks[current];
         if (old) {
             old.bus.volume.rampTo(-60, 1.4);
@@ -295,6 +301,16 @@
         if (built) play(name);
     }
 
+    // เตรียมเครื่องดนตรี + เสียงก้องไว้ล่วงหน้าตอนหน้าโหลด (ยังไม่มีเสียง) → กด "พร้อม" แล้วเพลงเริ่มทันที
+    function prepare() {
+        try {
+            build();
+            return Promise.resolve(reverb && reverb.ready).catch(() => {});
+        } catch (e) {
+            return Promise.resolve();
+        }
+    }
+
     function toggle() {
         muted = !muted;
         if (master) master.volume.rampTo(muted ? -Infinity : LEVEL, 0.4);
@@ -308,6 +324,7 @@
     const lastAt = {};
     function sfx(kind, n = 0) {
         if (!built || muted) return;
+        if (Tone.context.state !== 'running') Tone.context.resume().catch(() => {});   // มือถือพักระบบเสียงไว้ → ปลุกกลับ
         const now = Tone.now();
         // เครื่องเสียงเดี่ยว (noise/thump/blip) ห้ามสั่งเวลาซ้ำกัน → เลื่อนไปนิดถ้าชน
         const slot = (key) => { const t = Math.max(now, (lastAt[key] || 0) + .03); lastAt[key] = t; return t; };
@@ -323,6 +340,13 @@
             case 'rip': noise(3200, .18, .18); setTimeout(() => noise(3600, .14, .12), 120); break;
             case 'paper': noise(2400, .3, .3, -16); break;
             case 'pat': noise(1300, .07, .07, -22); break;                          // ชิ้นกระดาษวางลง
+            case 'tap':   // แตะกระดาษข้อความ: เสียงกระดาษชัดๆ + ติ๊งเบาๆ
+                noise(1900, .18, .18, -1);
+                inst.blip.triggerAttackRelease('E6', .09, slot('blip'), .85);
+                break;
+            case 'type':   // เสียงพิมพ์ดีดทีละคำ: "ติ๊ก" สั้นแต่ชัด
+                noise(3000 + Math.random() * 700, .055, .06, -2);
+                break;
             case 'drop':                                                             // การ์ดนับถอยหลังตก + โน้ตไต่ขึ้น
                 inst.thump.triggerAttackRelease('C2', '8n', slot('thump'));
                 noise(1600, .12, .12, -16);
@@ -345,5 +369,5 @@
         }
     }
 
-    window.Music = { start, scene, toggle, fadeOut, sfx, get muted() { return muted; } };
+    window.Music = { start, prepare, scene, toggle, fadeOut, sfx, get muted() { return muted; } };
 })();

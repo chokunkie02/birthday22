@@ -6,13 +6,10 @@
     <title>Happy Birthday!</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&family=Mali:wght@400;500;600&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500&family=Mali:wght@400;500;600&family=Caveat:wght@500;700&display=block" rel="stylesheet">
     <link rel="stylesheet" href="theme.css?v=3">
-    <link rel="stylesheet" href="collage.css?v=5">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
-    <script src="music.js?v=4"></script>
-    <script src="collage.js?v=3"></script>
-    <script src="bouquet.js?v=6"></script>
+    <link rel="stylesheet" href="collage.css?v=23">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
@@ -40,7 +37,38 @@
     </button>
 
     <!-- ================= ฉาก 1: ใส่รหัส ================= -->
-    <section id="scene-gate" class="scene is-active">
+    <!-- ================= ฉาก 0: กำลังโหลด → พร้อมไหม? ================= -->
+    <section id="scene-loading" class="scene is-active">
+        <div class="ld-wrap">
+            <div class="cg-doily ld-doily" aria-hidden="true"></div>
+            <div class="ld-heart ld-heart--a cg-heart"><svg viewBox="-4 -4 42 38" width="30" height="27" aria-hidden="true"><path d="M17 28C3 18 0 10 5 5C9 1 15 3 17 8C19 3 25 1 29 5C34 10 31 18 17 28Z" fill="#8B5E3C" stroke="#FFFFFF" stroke-width="4.5" paint-order="stroke" stroke-linejoin="round"/></svg></div>
+            <div class="ld-heart ld-heart--b cg-heart"><svg viewBox="-4 -4 42 38" width="30" height="27" aria-hidden="true"><path d="M17 28C3 18 0 10 5 5C9 1 15 3 17 8C19 3 25 1 29 5C34 10 31 18 17 28Z" fill="#D2AE88" stroke="#FFFFFF" stroke-width="4.5" paint-order="stroke" stroke-linejoin="round"/></svg></div>
+            <div class="cg-lift ld-card-wrap">
+                <div class="cg-tape cg-tape--lilac" style="width:70px; top:-9px; left:50%; margin-left:-35px; transform:rotate(-3deg);"></div>
+                <div class="cg-mount cg-tear cg-grain ld-card" data-tear="7">
+                    <!-- ระหว่างโหลด -->
+                    <div class="ld-loading" id="ldLoading">
+                        <div class="cg-hand ld-small">a little gift is coming</div>
+                        <div class="cg-thai ld-title">กำลังโหลด...</div>
+                        <div class="cg-hand ld-percent"><span id="ldPercent">0</span>%</div>
+                        <div class="ld-track">
+                            <div class="ld-fill" id="ldFill"></div>
+                            <span class="ld-bunny cg-emoji" id="ldBunny" aria-hidden="true">🐇</span>
+                        </div>
+                    </div>
+                    <!-- โหลดครบ 100% -->
+                    <div class="ld-ready" id="ldReady" aria-hidden="true">
+                        <div class="cg-hand ld-small">all set ♡</div>
+                        <div class="cg-thai ld-ask">พร้อมไหม?</div>
+                        <button id="readyBtn" class="ld-btn" tabindex="-1">พร้อม</button>
+                        <div class="cg-thai ld-note">เปิดเสียงด้วยนะ</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="scene-gate" class="scene">
       <div class="cg-stage" id="gateStage">
         <div class="cg-canvas">
 
@@ -174,7 +202,7 @@
             <div class="cg-piece" data-o="6" style="--r:-12deg; left:300px; top:268px;"><span class="cg-emoji cg-bob" style="font-size:30px;">🧸</span></div>
             <div class="cg-piece" data-o="6" style="--r:30deg; left:-20px; top:560px; width:120px;"><div class="cg-tape" style="position:relative; width:120px;"></div></div>
             <div class="cg-piece cg-lift" data-o="7" style="--r:5deg; left:196px; top:548px; width:176px;">
-                <img src="photos/cutout-c1.png" alt="" style="width:100%; display:block;">
+                <img src="photos/cutout-c1.webp" alt="" style="width:100%; display:block;">
             </div>
         </div>
       </div>
@@ -222,7 +250,7 @@
             </div>
 
             <!-- สติกเกอร์ไดคัทตัวเธอ -->
-            <div class="cg-piece cg-lift" data-o="11" style="--r:-4deg; left:-4px; top:556px; width:96px;"><img src="photos/cutout-k3.png" alt="" style="width:100%; display:block;"></div>
+            <div class="cg-piece cg-lift" data-o="11" style="--r:-4deg; left:-4px; top:556px; width:96px;"><img src="photos/cutout-k3.webp" alt="" style="width:100%; display:block;"></div>
 
             <!-- คำแนะนำ: ปัดขึ้น -->
             <div class="cg-piece" id="cakeHint" data-o="10" style="--r:-3deg; left:96px; top:600px; width:250px; text-align:center;">
@@ -241,7 +269,7 @@
                 </div>
             </div>
             <div class="cg-reveal cg-lift" id="cakeNext" style="position:absolute; left:160px; top:716px; rotate:5deg;">
-                <button id="toLetter" class="cg-tag">มีจดหมายด้วยนะ ✉︎</button>
+                <span class="cg-cta"><button id="toLetter" class="cg-tag">มีจดหมายด้วยนะ ✉︎</button></span>
             </div>
         </div>
       </div>
@@ -307,7 +335,7 @@
             </div>
 
             <!-- สติกเกอร์ไดคัทตัวเธอ -->
-            <div class="cg-piece cg-lift" data-o="11" style="--r:-6deg; left:-2px; top:618px; width:132px;"><img src="photos/cutout-l3.png" alt="" style="width:100%; display:block;"></div>
+            <div class="cg-piece cg-lift" data-o="11" style="--r:-6deg; left:-2px; top:618px; width:132px;"><img src="photos/cutout-l3.webp" alt="" style="width:100%; display:block;"></div>
 
             <!-- จดหมายพับ 3 ทบ (เนื้อหาเติมจาก LETTER ด้านล่าง) -->
             <div id="letterPaper">
@@ -322,7 +350,154 @@
       </div>
     </section>
 
-    <!-- ================= ฉาก 5: ช่อดอกไม้ ================= -->
+    <!-- ================= ฉาก 5: เครื่องเล่นแผ่นเสียง ================= -->
+    <section id="scene-record" class="scene">
+      <div class="cg-stage" id="recordStage">
+        <div class="cg-canvas">
+            <div class="cg-piece" data-o="1" style="--r:0deg; left:250px; top:-64px; width:210px; height:210px;">
+                <div class="cg-doily" style="width:100%; height:100%;"></div>
+            </div>
+            <div class="cg-piece cg-lift" data-o="2" style="--r:-5deg; left:-30px; top:168px; width:340px; height:320px;">
+                <div class="cg-kraft cg-grain cg-tear" data-tear="9" style="width:100%; height:100%;"></div>
+            </div>
+
+            <!-- หัวข้อ -->
+            <div class="cg-piece cg-lift" data-o="3" style="--r:-5deg; left:22px; top:40px; font-size:30px;">
+                <span class="cg-cut cg-tear" data-tear="3" style="background:#2B2522; color:#FFF; font-family:Impact,'Arial Black',sans-serif;">S</span><span class="cg-cut cg-tear" data-tear="3" style="background:#E7D3BD; color:#4A3020; font-family:Georgia,serif;">I</span><span class="cg-cut cg-tear" data-tear="3" style="background:#FFFDF8; color:#8B5E3C; font-family:'Courier New',monospace;">D</span><span class="cg-cut cg-tear" data-tear="3" style="background:#F6CAD6; color:#5A2A35; font-family:Georgia,serif; font-style:italic;">E</span>&nbsp;<span class="cg-cut cg-tear" data-tear="3" style="background:#C9D8BE; color:#24361E; font-family:Arial,sans-serif;">A</span>
+            </div>
+            <div class="cg-piece cg-hand" data-o="4" style="--r:-6deg; left:140px; top:92px; font-size:34px; color:#6B4A32;">our song ♪</div>
+            <div class="cg-piece cg-lift" data-o="5" style="--r:9deg; left:262px; top:124px; width:96px;">
+                <div class="cg-ticket cg-grain" style="position:relative; padding:8px 10px 8px 16px;">
+                    <div class="cg-ticket-label" style="font-size:9px; letter-spacing:1px;">ADMIT TWO</div>
+                    <div class="cg-hand" style="font-size:18px; color:#6B4A32; line-height:1;">22.11 ♡</div>
+                </div>
+            </div>
+
+            <!-- เครื่องเล่นแผ่นเสียง (สติกเกอร์ไดคัท) -->
+            <div id="player" class="rec-player">
+                <div class="cg-piece cg-lift" data-o="6" style="--r:0deg; left:0; top:0;">
+                    <svg viewBox="0 0 300 236" width="300" height="236" aria-label="เครื่องเล่นแผ่นเสียง" style="overflow:visible;">
+                        <defs>
+                            <filter id="deckcut" x="-8%" y="-8%" width="116%" height="116%">
+                                <feMorphology in="SourceAlpha" operator="dilate" radius="6" result="g"/>
+                                <feFlood flood-color="#FFFFFF"/><feComposite in2="g" operator="in" result="o"/>
+                                <feMerge><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                        </defs>
+                        <g filter="url(#deckcut)">
+                            <rect x="8" y="10" width="284" height="214" rx="14" fill="#B98557"/>
+                            <path d="M20 40 C80 34 140 46 280 38 M20 92 C90 86 170 98 280 90 M20 150 C100 144 180 158 280 148 M20 200 C110 194 190 206 280 198" stroke="#A97548" stroke-width="2" fill="none" opacity=".7"/>
+                            <rect x="16" y="18" width="268" height="198" rx="10" fill="none" stroke="#9C6A40" stroke-width="2"/>
+                            <circle cx="122" cy="118" r="94" fill="#E8DCCB"/>
+                            <circle cx="122" cy="118" r="88" fill="#3A2E2A"/>
+                            <circle cx="122" cy="118" r="76" fill="none" stroke="#4A3D38" stroke-width="2"/>
+                            <circle cx="122" cy="118" r="5" fill="#E8DCCB"/>
+                            <circle cx="268" cy="196" r="9" fill="#F3EADF" stroke="#8B5E3C" stroke-width="2"/>
+                            <circle cx="242" cy="200" r="6" fill="#F3EADF" stroke="#8B5E3C" stroke-width="2"/>
+                            <text x="236" y="222" font-family="Courier New, monospace" font-size="9" font-weight="700" fill="#FFF6EA">33 ⅓</text>
+                            <circle cx="252" cy="46" r="17" fill="#F3EADF" stroke="#8B5E3C" stroke-width="2"/>
+                        </g>
+                        <!-- แขนเข็ม (หมุนลงมาแตะแผ่น) -->
+                        <g id="deckArm" class="rec-arm">
+                            <path d="M252 46 L258 150 L240 186" stroke="#F3EADF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                            <path d="M252 46 L258 150 L240 186" stroke="#CBB89F" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                            <rect x="226" y="180" width="22" height="14" rx="3" fill="#6E4529" stroke="#FFFFFF" stroke-width="2" transform="rotate(30 237 187)"/>
+                            <circle cx="252" cy="46" r="7" fill="#8B5E3C"/>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- ซองแผ่นเสียง: ปกเป็นรูปเธอ -->
+            <div id="vinyl" class="rec-vinyl" role="button" aria-label="ลากแผ่นเสียงไปวางบนเครื่อง">
+                <svg class="rec-disc" viewBox="0 0 170 170" width="170" height="170" aria-hidden="true">
+                    <circle cx="85" cy="85" r="84" fill="#1E1A19" stroke="#FFFFFF" stroke-width="2"/>
+                    <circle cx="85" cy="85" r="74" fill="none" stroke="#2E2927" stroke-width="1.5"/>
+                    <circle cx="85" cy="85" r="64" fill="none" stroke="#2E2927" stroke-width="1.5"/>
+                    <circle cx="85" cy="85" r="54" fill="none" stroke="#2E2927" stroke-width="1.5"/>
+                    <circle cx="85" cy="85" r="44" fill="none" stroke="#2E2927" stroke-width="1.5"/>
+                    <path d="M36 50 A60 60 0 0 1 72 26" stroke="rgba(255,255,255,.22)" stroke-width="5" stroke-linecap="round" fill="none"/>
+                    <circle cx="85" cy="85" r="31" fill="#F6EEE3"/>
+                    <circle cx="85" cy="85" r="31" fill="none" stroke="#E3CDAF" stroke-width="2"/>
+                    <path transform="translate(78.5 65) scale(.38)" d="M17 28C3 18 0 10 5 5C9 1 15 3 17 8C19 3 25 1 29 5C34 10 31 18 17 28Z" fill="#D9545E"/>
+                    <circle cx="85" cy="85" r="3.5" fill="#1E1A19"/>
+                </svg>
+            </div>
+            <div id="sleeve" class="cg-piece cg-lift rec-sleeve" data-o="7" style="--r:-5deg; left:22px; top:500px; width:172px; height:172px;">
+                <div class="cg-mount" style="width:100%; height:100%; --m:8px; position:relative;">
+                    <!-- ปกซิงเกิล: เพลงถึงคนจ๋วยยย -->
+                    <div class="rec-cover cg-grain">
+                        <div class="cg-hand rec-cover-small">a single ♪</div>
+                        <div class="cg-thai rec-cover-t1">เพลงถึง</div>
+                        <div class="cg-thai rec-cover-t2">คนจ๋วยยย</div>
+                        <svg class="rec-cover-heart" viewBox="-4 -4 42 38" width="22" height="20" aria-hidden="true"><path d="M17 28C3 18 0 10 5 5C9 1 15 3 17 8C19 3 25 1 29 5C34 10 31 18 17 28Z" fill="#D9545E" stroke="#FFFFFF" stroke-width="4" paint-order="stroke" stroke-linejoin="round"/></svg>
+                        <div class="cg-hand rec-cover-side">side A ♡</div>
+                    </div>
+                </div>
+                <div class="cg-tape" style="width:56px; top:-8px; left:-12px; transform:rotate(-34deg);"></div>
+            </div>
+
+            <!-- คำแนะนำ -->
+            <div id="recHint" class="cg-piece" data-o="8" style="--r:-4deg; left:196px; top:620px; width:170px; text-align:center;">
+                <svg viewBox="0 0 120 70" width="120" height="70" aria-hidden="true" style="display:block; margin:0 auto -6px;"><path d="M100 64 C96 30 60 14 18 12" stroke="#A0704C" stroke-width="2" stroke-dasharray="5 6" fill="none"/><path d="M26 4 L14 12 L26 20" stroke="#A0704C" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+                <div class="cg-hand" style="font-size:24px; color:#6B4A32; line-height:1.15;">ลากแผ่นเสียง<br>ใส่เครื่องดูสิ ♪</div>
+            </div>
+            <div class="cg-piece" data-o="9" style="--r:12deg; left:316px; top:470px;"><span class="cg-emoji cg-bob" style="font-size:30px;">🎧</span></div>
+
+            <!-- โตมาด้วยกัน: เราสองคนเดินบนดาวดวงเล็ก 7 ช่วงวัย ขึ้นตามเพลง (growup.js) -->
+            <div id="growUp" class="gu" aria-hidden="true">
+                <svg width="0" height="0" style="position:absolute;">
+                    <defs>
+                        <filter id="gucut" x="-20%" y="-20%" width="140%" height="140%">
+                            <feMorphology in="SourceAlpha" operator="dilate" radius="3.2" result="g"/>
+                            <feFlood flood-color="#FFFFFF"/><feComposite in2="g" operator="in" result="o"/>
+                            <feMerge><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                        <radialGradient id="guShade" cx="35%" cy="25%" r="85%">
+                            <stop offset="55%" stop-color="#6B4A32" stop-opacity="0"/>
+                            <stop offset="100%" stop-color="#6B4A32" stop-opacity=".22"/>
+                        </radialGradient>
+                    </defs>
+                </svg>
+                <div id="guSky" class="gu-sky cg-grain cg-tear" data-tear="9"></div>
+                <div id="guSkyDeco" class="gu-skydeco"></div>
+                <div id="guWorld" class="gu-world">
+                    <div id="guProps" class="gu-props"></div>
+                    <!-- สองคนเดินบนผิวโลก (growup.js หมุนตำแหน่งให้ทุกเฟรม) -->
+                    <div id="guHim" class="gu-walker"><div class="gu-fig"><i class="gu-shadow"></i><div class="gu-wig"><img alt=""></div></div></div>
+                    <div id="guHer" class="gu-walker gu-walker--her"><div class="gu-fig"><i class="gu-shadow"></i><div class="gu-wig"><img alt=""></div></div></div>
+                </div>
+                <div id="guCap" class="gu-cap cg-lift">
+                    <div class="cg-tape" style="width:44px; top:-9px; left:50%; margin-left:-22px; transform:rotate(-4deg);"></div>
+                    <span id="guCapYear" class="cg-thai gu-year"></span>
+                    <small id="guCapPlace" class="cg-thai gu-place"></small>
+                </div>
+            </div>
+
+            <div id="recNow" class="cg-reveal cg-hand" style="position:absolute; left:22px; top:336px; z-index:7; font-size:24px; color:#6B4A32; rotate:-4deg;">now playing ♪</div>
+            <!-- 1:52 ปุ่มให้เธอกดเปิดอ่านเอง -->
+            <div id="recRead" class="rec-read" role="button" tabindex="0">
+                <button class="ld-btn rec-read-btn" tabindex="-1">มีอะไรอยากบอก ♡</button>
+            </div>
+            <div id="recTapPlay" class="cg-reveal cg-lift" style="position:absolute; left:120px; top:482px; rotate:3deg;">
+                <button class="cg-tag">แตะเพื่อฟังเพลง ♪</button>
+            </div>
+
+            <!-- ข้อความขอโทษ: โน้ตในปกอัลบั้ม -->
+            <div id="recNote" class="rec-note cg-lift">
+                <div class="cg-tape cg-tape--lilac" style="width:70px; top:-6px; left:-14px; transform:rotate(-30deg); z-index:5;"></div>
+                <div class="cg-tape" style="width:62px; top:-6px; right:-14px; transform:rotate(26deg); z-index:5;"></div>
+                <div id="recPaper" class="cg-notebook cg-grain cg-torn-top rec-paper">
+                    <div id="recText" class="rec-text"></div>
+                    <div id="recNext" class="rec-next cg-hand">แตะเพื่ออ่านต่อ ↓</div>
+                    <div id="recPage" class="rec-page cg-hand"></div>
+                </div>
+            </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ฉาก 6: ช่อดอกไม้ ================= -->
     <section id="scene-flowers" class="scene">
       <div class="cg-stage" id="flowerStage">
         <div class="cg-canvas">
@@ -344,7 +519,7 @@
             <div id="bouquet" role="img" aria-label="ช่อดอกไม้"></div>
 
             <div class="cg-piece cg-lift" data-o="4" style="--r:-4deg; left:4px; top:536px; width:112px;">
-                <img src="photos/cutout-f1.png" alt="" style="width:100%; display:block;">
+                <img src="photos/cutout-f1.webp" alt="" style="width:100%; display:block;">
             </div>
             <div class="cg-piece" data-o="5" style="--r:-12deg; left:306px; top:600px;"><span class="cg-emoji cg-bob" style="font-size:30px;">🐇</span></div>
 
@@ -370,13 +545,21 @@
     </div>
 
     <div id="whiteout"></div>
+    <div id="ytWrap" aria-hidden="true"><div id="ytPlayer"></div></div>
 
+    <!-- สคริปต์อยู่ท้ายหน้า: หน้าโหลด (0-100%) ขึ้นให้เห็นทันที ไม่ต้องรอดาวน์โหลด Tone.js ก่อน -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <script src="music.js?v=10"></script>
+    <script src="collage.js?v=3"></script>
+    <script src="bouquet.js?v=8"></script>
+    <script src="record.js?v=9"></script>
+    <script src="growup.js?v=15"></script>
     <script>
         // =================================================================
         // แก้ข้อความ/รหัสได้ตรงนี้
         // =================================================================
         const CONFIG = {
-            correctPin: "0001",
+            correctPin: "2122",
             hintText: "อยู่ในกล่องไง",
             candles: 5,
         };
@@ -388,7 +571,57 @@
                 ["ขอให้ร่างกายแข็งแรง ไม่ดื้อไม่ซน", "นอนหลับพักผ่อนเพียงพอ", "เจอแต่คนดีๆนะ"],
             ],
             from: "จาก ... โชกุน",
+            button: "มีเพลงให้ฟังด้วยนะ ♪",
+        };
+        // หน้าแผ่นเสียง: เพลงจาก YouTube + ข้อความขอโทษ (แก้ได้ตรงนี้)
+        const RECORD = {
+            video: 'lYl7WhMvq9g',
+            start: 63,          // 1:03 เริ่มเล่น
+            fadeAt: 108,        // 1:48 เริ่มค่อยๆ เบาลง
+            fadeEnd: 123,       // 2:03 เบาสุด แล้วคลอไว้แบบนั้นระหว่างอ่าน
+            readyAt: 112,       // 1:52 ปุ่ม "มีอะไรอยากบอก" โผล่ ให้เธอกดเองเมื่อพร้อม
+            quietVolume: 20,    // ความดังตอนคลอหลัง 1:48 ก่อนกดอ่าน (เต็ม = 100)
+            readVolume: 5,      // กดอ่านข้อความแล้ว ค่อยๆ เบาลงเหลือเท่านี้ (เบามากๆ)
+            spindle: { x: 159, y: 308 },
+            liftY: 60,          // ตอนเพลงเล่น เครื่องเล่นยกขึ้นเท่านี้ (ต้องตรงกับ CSS) ให้มีที่ให้ฉากโตมาด้วยกัน
+            wordMs: 110,
+            pages: [
+                "ผมขอโทษนะ ที่ผมไม่ค่อยมีเวลาให้คุณเลย",
+                "คุณต้องรอผมมาทั้งวัน ส่วนผมกว่าจะทำงานที่แลปเสร็จก็แบบดึกๆ กว่าจะอาบน้ำกว่าจะเคลียร์จบ คุณก็ง่วงทุกทีเลยย เวลาของเราไม่ค่อยตรงกันเลย บางวันคุยกันนิดนึง บางวันก็ไม่ได้บอกฝันดีตอนโทรกัน ผมรู้ว่าผมอาจมีเวลาให้คุณน้อยไป เข้าใจว่าคงน้อยใจบ้างบางทีอะ ผมขอโทษจริงๆ นะ",
+                "แต่ผมอยากให้เข้าใจนะ ไม่ใช่ว่าผมไม่อยากคุย แต่ผมแค่ไม่อยากให้ตัวเองว่าง เพราะแบบทุกทีที่ผมว่าง ผมจะรู้สึกว่าคนอื่นเขาแบบกำลังพัฒนาตัวเองไปข้างหน้า แล้วผมยังอยู่ที่เดิม ผมไม่อยากรู้สึกผิดเพราะแบบถ้าเราไม่เก่งกว่าคนอื่นแล้วใครจะรับเราเข้าทำงาน ผมอยากเก่งกว่านี้อีกมากๆๆเลย ผมอยากเป็นคนที่ดีพอ อยากเป็นคนที่คุณฝากอนาคตไว้ได้",
+                "ถึงจะงานเยอะแค่ไหน ผมก็จะพยายามทักหานะ พยายามหาเวลาว่างทักหาคุณเสมอนะซีมอล ถึงแบบมันอาจจะไม่มากเท่าไหร่ แต่ทุกครั้งที่ผมว่างผมก็จะนึกถึงคุณนะซีมอล",
+                "แล้วก็ขอโทษอีกเรื่องนะ ที่ทำให้คุณต้องเป็นห่วงเรื่องการกินของผม ผมตื่นสายเลยกินไม่เป็นเวลาทำให้คุณต้องเป็นห่วงผมตลอดเลย แล้วก็ทำให้กล้ามเนื้อหัวใจกระตุกด้วย ผมจะพยายามกินให้ครบสามมื้อนะ พยายามกินให้เป็นเวลานะ คุณจะได้ไม่ต้องเป็นห่วงผม",
+                "ขอบคุณที่คุณเข้าใจผมนะ ผมรักคุณนะซีมอล",
+            ],
+            closing: "สุขสันต์วันเกิดนะ",
+            from: "— โชกุน",
+            heart: '<svg class="cg-heart" viewBox="-4 -4 42 38" width="40" height="36" aria-hidden="true"><path d="M17 28C3 18 0 10 5 5C9 1 15 3 17 8C19 3 25 1 29 5C34 10 31 18 17 28Z" fill="#8B5E3C" stroke="#FFFFFF" stroke-width="4.5" paint-order="stroke" stroke-linejoin="round"/></svg>',
             button: "ไปรับดอกไม้กัน",
+        };
+        // โตมาด้วยกัน: เดินรอบโลกตามเข็มนาฬิกา 1:03 → 1:52 (growup.js, สติกเกอร์ใน growup/)
+        //   w{n}-him/her.webp = ท่าเดินหันข้างรอบที่ n, s7-him/her.webp = หน้าตรงตอนจบ
+        //   years: [ป้าย, เริ่มตอนเดินไปได้กี่ส่วนของรอบ (0-1)]
+        const GROW = {
+            dir: 'growup/',
+            span: RECORD.readyAt - RECORD.start,          // เดินจบ + หันหน้าก่อนปุ่มโผล่
+            heart: RECORD.heart,
+            // height = ความสูงเขา (px), ratio = ความสูงเธอเทียบกับเขา, w = ความยาวรอบ (รอบที่มีบทพูดให้ยาวกว่า)
+            // events (ตัวเลข = ช่วงของรอบ 0-1): stop = หยุดเดิน, turn = เธอหันกลับมา, lag = เขาเดินตามไม่ทันแล้ววิ่งตาม,
+            //         says = [ใครพูด, ข้อความ, เริ่ม, จบ]
+            laps: [
+                { w: 1.05, height: 104, ratio: .96, place: 'วัดท่ายาง', years: [['อนุบาล 1', 0], ['อนุบาล 2', 1 / 3], ['อนุบาล 3', 2 / 3]],
+                  events: { lag: [.3, .88], lagDeg: 18, says: [['him', 'รอด้วยย', .36, .68]] } },
+                { w: .8, height: 116, ratio: .96, place: 'วัดท่ายาง', years: [['ป.1', 0], ['ป.2', 1 / 6], ['ป.3', 2 / 6], ['ป.4', 3 / 6], ['ป.5', 4 / 6], ['ป.6', 5 / 6]] },
+                { w: 1.3, height: 140, ratio: .918, place: 'ทุ่งใหญ่วิทยาคม', years: [['ม.1', 0], ['ม.2', .5]],
+                  events: { stop: [.3, .74], turn: [.3, .74], says: [['her', 'ผมทรงนี้ใครตัดให้เนี่ย', .32, .53], ['him', 'แม่ตัดให้คับบ', .54, .74]] } },
+                { w: .8, height: 150, ratio: .92, place: 'ทุ่งใหญ่วิทยาคม', years: [['ม.3', 0]] },
+                { w: 1.35, height: 160, ratio: .913, place: 'ทุ่งใหญ่วิทยาคม', years: [['ม.4', 0], ['ม.5', 1 / 3], ['ม.6', 2 / 3]],
+                  events: { stop: [.28, .74], turn: [.28, .74], says: [['her', 'จบ ม.6 คุณจะเรียนอะไร?', .3, .52], ['him', 'ไว้จะมาบอกนะ', .53, .74]] } },
+                { w: 1.35, height: 168, ratio: .907, place: 'ม.อ. & มวล.', years: [['ปี 1', 0], ['ปี 2', .67]],
+                  events: { stop: [.28, .74], turn: [.46, .74], says: [['him', 'เรียนวิศวะคอมนะ<br>ที่บอกว่าจะมาบอกไง', .3, .55], ['her', 'อ๋อออ', .56, .74]] } },
+                { w: .55, height: 172, ratio: .934, place: 'ม.อ. & มวล.', years: [['ปี 2', 0]] },   // รอบสุดท้ายเดินแค่ถึงกลางโลก
+            ],
+            final: { height: 172, ratio: .928, year: 'ปี 3', place: 'ตอนนี้ ♡', hold: 5, say: 'สุขสันต์วันเกิดนะ ♡' },   // หันหน้ามายืนดุ๊กดิ๊ก 5 วิ
         };
         const PALETTE = ['#E7D3BD', '#C9A27E', '#8B5E3C', '#F6CAD6', '#FFFFFF', '#C9D8BE'];
 
@@ -400,16 +633,20 @@
             countdown: document.getElementById('scene-countdown'),
             cake: document.getElementById('scene-cake'),
             letter: document.getElementById('scene-letter'),
+            record: document.getElementById('scene-record'),
             flowers: document.getElementById('scene-flowers'),
         };
         function go(name) {
             Object.values(scenes).forEach(s => s.classList.remove('is-active'));
+            document.getElementById('scene-loading').classList.remove('is-active');
             const scene = scenes[name];
             scene.classList.add('is-active');
             const stage = scene.querySelector('.cg-stage');
             if (stage) Collage.show(stage); else Collage.tear(scene);
             if (window.Music) Music.scene(name);
             if (name === 'countdown') runCountdown();
+            if (name === 'letter' && window.Record) { Record.preload(); GrowUp.preload(); }
+            if (name === 'record' && window.Record) Record.enter();
             if (name === 'flowers') setTimeout(startFlowers, 1500);
         }
 
@@ -423,9 +660,6 @@
             musicBtn.classList.add('is-on');
             Collage.tear(musicBtn);
         }
-        document.addEventListener('pointerup', startMusic, { once: true });
-        document.addEventListener('touchend', startMusic, { once: true });
-        document.addEventListener('keydown', startMusic, { once: true });
         musicBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             musicBtn.classList.toggle('is-muted', Music.toggle());
@@ -700,7 +934,8 @@
             document.getElementById('fold2').innerHTML = LETTER.folds[1].map(t => line(t)).join('');
             document.getElementById('fold3').innerHTML = LETTER.folds[2].map(t => line(t)).join('') +
                 line(LETTER.from, 'letter-hand" style="font-size:26px; text-align:right; margin-top:10px;') +
-                `<div class="line" style="text-align:right; margin-top:12px;"><button id="toFlowers" class="cg-tag">${LETTER.button}</button></div>`;
+                // ปุ่มไปหน้าแผ่นเสียง (มีกรอบ ให้รู้ว่ากดได้)
+                `<div class="line letter-go"><span class="cg-cta"><button id="toFlowers" class="cg-tag">${LETTER.button}</button></span></div>`;
         })();
 
         (function letterInteraction() {
@@ -775,7 +1010,7 @@
         document.addEventListener('click', (e) => {
             if (!e.target.closest('#toFlowers')) return;
             Music.sfx('paper');
-            go('flowers');
+            go('record');
         });
 
         // =================================================================
@@ -827,9 +1062,80 @@
         });
 
         // =================================================================
+        // ฉาก 5: แผ่นเสียง
+        // =================================================================
+        GrowUp.init(GROW);
+        Record.init(RECORD, {
+            onDone: () => { Music.sfx('paper'); go('flowers'); },
+            onTime: (sec) => GrowUp.time(sec),     // เวลาเพลงจริง → ช่วงวัยที่ต้องโชว์
+            onRead: () => GrowUp.end(),            // 1:49 ข้อความขึ้น → ตัวการ์ตูนค่อยๆ ลงไป
+        });
+
+        // =================================================================
         // เริ่ม
         // =================================================================
-        window.addEventListener('load', () => go('gate'));
+        // หน้าโหลด: นับของที่โหลดเสร็จจริง (รูปทุกรูป + ฟอนต์ + เตรียมเพลง) → 100% → ถาม "พร้อมไหม?"
+        (function loader() {
+            scenes.loading = document.getElementById('scene-loading');
+            Collage.tear(scenes.loading);
+            const percentEl = document.getElementById('ldPercent');
+            const fill = document.getElementById('ldFill');
+            const bunny = document.getElementById('ldBunny');
+            const readyBtn = document.getElementById('readyBtn');
+
+            // โหลดของทั้งเว็บตั้งแต่หน้านี้: รูปทุกหน้า, ดอกทิวลิป, ตัวการ์ตูนเดินรอบโลก, ฟอนต์, เพลง, ตัวเล่น YouTube
+            const tasks = [];
+            const loadImg = (src) => new Promise(r => { const im = new Image(); im.onload = im.onerror = r; im.src = src; });
+            document.querySelectorAll('img').forEach(img => tasks.push(
+                img.complete ? Promise.resolve() : new Promise(r => { img.addEventListener('load', r, { once: true }); img.addEventListener('error', r, { once: true }); })));
+            if (window.Bouquet && Bouquet.files) Bouquet.files().forEach(src => tasks.push(loadImg(src)));
+            if (window.GrowUp) tasks.push(...(GrowUp.preload() || []));
+            if (window.Record) tasks.push(Record.preload());
+            // โหลดฟอนต์ทุกตัว/ทุกน้ำหนักให้ครบตั้งแต่ตอนนี้ (รวมชุดตัวอักษรไทย) — ฟอนต์ของหน้าหลังๆ จะได้ไม่เปลี่ยนต่อหน้า
+            if (document.fonts && document.fonts.load) {
+                [['Mali', 400], ['Mali', 500], ['Mali', 600], ['Kanit', 400], ['Kanit', 500], ['Caveat', 500], ['Caveat', 700]]
+                    .forEach(([f, w]) => tasks.push(document.fonts.load(`${w} 20px "${f}"`, 'กขคง่้๊๋ ABCabc 0123')));
+                tasks.push(document.fonts.ready);
+            }
+            if (window.Music) tasks.push(Music.prepare());
+            const total = tasks.length;
+            let done = 0;
+            tasks.forEach(t => Promise.resolve(t).catch(() => {}).then(() => { done++; }));
+
+            // ตัวเลขวิ่งตามของที่โหลดเสร็จจริงเท่านั้น ถึง 100% เมื่อครบทุกอย่าง
+            // (กันเหนียว: ถ้าเน็ตค้างเกิน 45 วิ ให้ไปต่อได้ ของที่ขาดจะโหลดตามทีหลัง)
+            const t0 = performance.now();
+            let shown = 0;
+            function tick(now) {
+                const real = total ? done / total : 1;
+                const late = now - t0 > 45000;
+                const target = late ? 1 : real;
+                shown += (target - shown) * 0.08 + (target > shown ? 0.002 : 0);
+                if (shown > target) shown = target;
+                const pct = Math.round(shown * 100);
+                percentEl.textContent = pct;
+                fill.style.width = pct + '%';
+                bunny.style.left = pct + '%';
+                if (pct >= 100) return showReady();
+                requestAnimationFrame(tick);
+            }
+            requestAnimationFrame(tick);
+
+            function showReady() {
+                document.getElementById('ldLoading').classList.add('is-gone');
+                const r = document.getElementById('ldReady');
+                r.classList.add('is-in');
+                r.setAttribute('aria-hidden', 'false');
+                readyBtn.tabIndex = 0;
+            }
+
+            readyBtn.addEventListener('click', () => {
+                startMusic();                       // การกดปุ่ม = มือถือยอมให้เล่นเสียง
+                readyBtn.disabled = true;
+                readyBtn.classList.add('is-pressed');
+                setTimeout(() => { Music.sfx('chime'); go('gate'); }, 450);
+            });
+        })();
     </script>
 </body>
 </html>

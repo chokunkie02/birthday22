@@ -104,7 +104,13 @@
 
 /* --- รูป --- */
 .cg-polaroid { background: #fff; padding: 10px 10px 40px; }
-.cg-booth { background: #222; padding: 6px 6px 18px; display: flex; flex-direction: column; gap: 5px; }
+.cg-booth {   /* แถบโฟโต้บูธ: กระดาษสีลาเต้ ขอบขาว เข้าธีมเว็บ (เดิมสีดำ) */
+    background-color: #D8BB98;
+    background-image: radial-gradient(rgba(255, 255, 255, .18) 1px, transparent 1.2px);
+    background-size: 5px 5px;
+    padding: 6px 6px 18px; display: flex; flex-direction: column; gap: 5px;
+    outline: 3px solid #FFFFFF; outline-offset: -1px;
+}
 .cg-photo {
     position: relative;
     width: 100%;
@@ -113,7 +119,8 @@
     background: #D9D3CB;
 }
 .cg-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.cg-booth .cg-photo img { filter: grayscale(1) contrast(1.05); }
+.cg-booth .cg-photo img { filter: sepia(.12) saturate(.95) brightness(1.03); }   /* สีจริง อุ่นนิดๆ */
+.cg-booth .cg-photo { box-shadow: 0 0 0 2px #FFFDF8; }
 /* ยังไม่มีรูป → ขึ้นลายมือ "รูปเรา" */
 .cg-photo.is-missing img { display: none; }
 .cg-photo.is-missing::after {
@@ -607,3 +614,297 @@
 }
 .cg-key--word { font: 500 16px 'Mali', 'Kanit', sans-serif; color: #A0704C; }
 .cg-key:active { transform: rotate(var(--kr, 0deg)) scale(.9) translateY(2px); box-shadow: 0 1px 1px rgba(60, 40, 30, .16); }
+
+/* =====================================================================
+   หน้าโหลด → พร้อมไหม?
+   ===================================================================== */
+#scene-loading { z-index: 150; }
+.ld-wrap { position: relative; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.ld-doily { position: absolute; width: 230px; height: 230px; right: -80px; top: -70px; }
+.ld-heart { position: absolute; }
+.ld-heart--a { left: 14%; top: 24%; transform: rotate(-14deg); animation: cg-bob 4s ease-in-out infinite; }
+.ld-heart--b { right: 16%; bottom: 22%; transform: rotate(12deg); animation: cg-bob 5s ease-in-out infinite; }
+.ld-card-wrap { position: relative; transform: rotate(-2deg); }
+.ld-card { --m: 0; width: 270px; height: 250px; position: relative; }
+.ld-loading, .ld-ready {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    transition: opacity .7s ease, translate .7s cubic-bezier(.22, .9, .3, 1);
+}
+.ld-small { font-size: 20px; color: #A0704C; line-height: 1; }
+.ld-title { font-size: 22px; color: #4A3B32; margin-top: 4px; }
+.ld-percent { font-size: 58px; color: #6B4A32; line-height: 1.1; margin-top: 2px; }
+.ld-track { position: relative; width: 196px; height: 18px; margin-top: 6px; border-bottom: 2px dashed #D8C3A8; }
+.ld-fill {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+    background-color: rgba(226, 204, 180, .9);
+    background-image:
+        repeating-linear-gradient(0deg, rgba(139, 94, 60, .22) 0 5px, transparent 5px 10px),
+        repeating-linear-gradient(90deg, rgba(139, 94, 60, .22) 0 5px, transparent 5px 10px);
+}
+.ld-bunny { position: absolute; top: -26px; left: 0; font-size: 26px; translate: -50% 0; animation: ld-hop .6s ease-in-out infinite; }
+@keyframes ld-hop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+.ld-loading.is-gone { opacity: 0; translate: 0 -12px; pointer-events: none; }
+.ld-ready { opacity: 0; translate: 0 14px; pointer-events: none; }
+.ld-ready.is-in { opacity: 1; translate: 0 0; pointer-events: auto; }
+.ld-ask { font-size: 30px; font-weight: 500; color: #4A3B32; margin: 4px 0 16px; }
+.ld-btn {
+    font-family: 'Mali', 'Kanit', sans-serif; font-size: 20px; font-weight: 500;
+    color: #FFFDF8; background: #8B5E3C;
+    border: none; border-radius: 16px 20px 15px 19px;
+    padding: 10px 34px; min-height: 48px;
+    box-shadow: 0 2px 0 #6E4529, 0 8px 14px -6px rgba(60, 40, 30, .5);
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+    animation: ld-pulse 1.8s ease-in-out infinite;
+}
+.ld-btn.is-pressed, .ld-btn:active { transform: scale(.94) translateY(2px); box-shadow: 0 1px 0 #6E4529; animation: none; }
+@keyframes ld-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05) rotate(-1deg); } }
+.ld-note { font-size: 13px; color: #A0704C; margin-top: 12px; }
+@media (prefers-reduced-motion: reduce) { .ld-bunny, .ld-btn, .ld-heart { animation: none !important; } }
+
+/* =====================================================================
+   หน้าเครื่องเล่นแผ่นเสียง
+   ===================================================================== */
+#recordStage { touch-action: none; }
+#ytWrap { position: fixed; left: 0; bottom: 0; width: 200px; height: 113px; opacity: .01; pointer-events: none; z-index: -1; overflow: hidden; }
+.rec-player { position: absolute; left: 37px; top: 190px; width: 300px; height: 236px; transform-origin: 122px 118px; transition: transform 1.4s cubic-bezier(.22, .9, .3, 1); }
+.rec-arm { transform-box: view-box; transform-origin: 252px 46px; transform: rotate(-6deg); transition: transform 1.3s cubic-bezier(.45, 0, .2, 1); }
+.rec-arm.is-down { transform: rotate(23deg); }
+
+.rec-vinyl {
+    position: absolute; left: 104px; top: 501px; width: 170px; height: 170px;
+    z-index: 3; cursor: grab; touch-action: none;
+    filter: drop-shadow(0 4px 6px rgba(30, 20, 15, .35));
+    transform-origin: 85px 85px;
+    transition: translate .6s cubic-bezier(.22, .9, .3, 1), transform 1.4s cubic-bezier(.22, .9, .3, 1);
+}
+.rec-vinyl.is-dragging { cursor: grabbing; transition: none; z-index: 70; filter: drop-shadow(0 12px 14px rgba(30, 20, 15, .4)); }
+.rec-vinyl.is-snapping { z-index: 8; }
+.rec-disc { display: block; }
+#recordStage.is-playing .rec-disc { animation: rec-spin 1.8s linear infinite; }
+@keyframes rec-spin { to { transform: rotate(360deg); } }
+.rec-sleeve { z-index: 4; }
+.rec-sleeve.is-away { translate: -60px 380px; transition: translate 1.2s cubic-bezier(.5, 0, .75, 0) !important; }
+
+.rec-flynote {
+    position: absolute; z-index: 20; pointer-events: none;
+    font-family: 'Caveat', cursive; font-size: 28px; color: #8B5E3C;
+    animation: rec-float 3s ease-out forwards;
+}
+@keyframes rec-float {
+    0% { opacity: 0; transform: translate(0, 0) rotate(-10deg) scale(.6); }
+    20% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--dx), -120px) rotate(14deg) scale(1.1); }
+}
+
+/* ตอนอ่าน: เครื่องเล่นลอยขึ้นไปหมุนอยู่ด้านบน, โน้ตเลื่อนขึ้นมา */
+#recordStage.is-reading .rec-player,
+#recordStage.is-reading .rec-vinyl { transform: translateY(-150px) scale(.72); }
+#recordStage.is-reading #recNow, #recordStage.is-reading #recTapPlay { opacity: 0 !important; pointer-events: none; }
+.rec-note {
+    position: absolute; left: 20px; top: 318px; width: 335px; height: 478px; z-index: 30;
+    opacity: 0; transform: translateY(520px) rotate(3deg); pointer-events: none;
+    transition: transform 2.6s cubic-bezier(.25, .8, .3, 1), opacity 1.4s ease;   /* ค่อยๆ เลื่อนขึ้นช้าๆ */
+}
+#recordStage.is-reading .rec-note { opacity: 1; transform: translateY(0) rotate(-1deg); pointer-events: auto; }
+.rec-paper { position: relative; width: 100%; height: 100%; padding: 40px 20px 46px 46px; cursor: pointer; transform-origin: 50% 0; }
+.rec-paper.is-turning { animation: rec-turn .42s ease-in-out; }
+.rec-paper.is-tap:not(.is-turning) { animation: rec-tap .32s ease-out; }   /* แตะแล้วกระดาษขยับนิดนึง */
+@keyframes rec-tap { 35% { transform: rotate(-.8deg) scale(.985); } 70% { transform: rotate(.4deg); } }
+@keyframes rec-turn {
+    50% { transform: perspective(900px) rotateX(-60deg) translateY(-10px); opacity: .25; }
+}
+.rec-text { font-family: 'Mali', 'Kanit', sans-serif; color: #4A3B32; }
+.rec-para { font-size: 16px; line-height: 26px; }
+.rec-para .w { opacity: 0; transition: opacity .35s ease; }
+.rec-para .w.in { opacity: 1; }
+.rec-next { position: absolute; right: 18px; bottom: 12px; font-size: 21px; color: #A0704C; opacity: 0; transition: opacity .6s; animation: cg-bob 2.4s ease-in-out infinite; }
+.rec-next.is-in { opacity: 1; }
+.rec-page { position: absolute; left: 46px; bottom: 14px; font-size: 16px; color: #C9A27E; }
+.rec-closing { font-size: 30px; font-weight: 500; text-align: center; margin-top: 70px; color: #4A3B32; }
+.rec-from { font-family: 'Caveat', 'Mali', cursive; font-size: 30px; text-align: right; margin: 18px 10px 0 0; color: #6B4A32; }
+.rec-heart { text-align: center; margin-top: 16px; }
+@media (prefers-reduced-motion: reduce) {
+    #recordStage.is-playing .rec-disc, .rec-next { animation: none !important; }
+}
+
+/* =====================================================================
+   โตมาด้วยกัน (growup.js) — เดินบนดาวดวงเล็กใต้เครื่องเล่นแผ่นเสียงระหว่างเพลง
+   ===================================================================== */
+/* ตอนเพลงเล่น เครื่องเล่นยกขึ้น (ต้องตรงกับ RECORD.liftY) ให้มีที่ให้ฉาก */
+#recordStage.is-playing:not(.is-reading) .rec-player,
+#recordStage.is-playing:not(.is-reading) .rec-vinyl { transform: translateY(-60px) scale(.8); }
+
+.gu {
+    position: absolute; left: 0; top: 340px; width: 375px; height: 472px;
+    z-index: 2; pointer-events: none; overflow: hidden;
+    opacity: 0; transition: opacity 2s ease, transform 1.6s cubic-bezier(.5, 0, .75, 0);
+}
+.gu.is-on { opacity: 1; }
+.gu.is-done { opacity: 0; transform: translateY(80px); }
+#recTapPlay { z-index: 12; }
+
+/* ท้องฟ้า = กระดาษฉีกสีเปลี่ยนตามช่วงวัย */
+.gu-sky {
+    position: absolute; left: 10px; right: 10px; top: 12px; bottom: -20px;
+    background-color: #F8E3E3; transition: background-color 1.2s ease;
+    box-shadow: 0 2px 4px rgba(60, 40, 30, .12);
+}
+.gu-skydeco, .gu-props { position: absolute; inset: 0; }
+.gu-deco { position: absolute; }
+.gu-deco.gu-drift { animation: gu-drift 9s ease-in-out infinite alternate; }
+.gu-deco.gu-tw { animation: gu-tw 2.4s ease-in-out infinite; }
+@keyframes gu-drift { from { translate: -10px 0; } to { translate: 12px 0; } }
+@keyframes gu-tw { 0%, 100% { opacity: 1; scale: 1; } 50% { opacity: .35; scale: .7; } }
+
+/* โลกใบเล็ก (กล่อง 360 จุดกลางตรงกับ CX/CY ใน growup.js) */
+.gu-world { position: absolute; left: 7px; top: 300px; width: 360px; height: 360px; }   /* จุดกลาง = (CX 187, CY 480) ใน growup.js */
+.gu-planet { position: absolute; inset: 0; filter: drop-shadow(0 -2px 6px rgba(60, 40, 30, .18)); }
+.gu-prop { position: absolute; left: 180px; top: 180px; width: 0; height: 0; transform-origin: 0 0; }
+.gu-pop { position: absolute; left: 0; bottom: 0; translate: -50% 0; transform-origin: 50% 100%; animation: gu-up .7s cubic-bezier(.3, 1.4, .5, 1) both; }
+.gu-deco .gu-pop { position: static; translate: none; }
+.gu-prop svg, .gu-deco svg { filter: drop-shadow(0 2px 2px rgba(60, 40, 30, .22)); }
+@keyframes gu-up { 0% { transform: scale(.1, 0); opacity: 0; } 60% { transform: scale(1.04, 1.08); opacity: 1; } 100% { transform: scale(1); } }
+.gu-set.is-fold .gu-pop { animation: gu-down .45s ease-in both !important; }
+@keyframes gu-down { to { transform: scale(.2, 0); opacity: 0; } }
+
+/* ของในฉากที่ขยับเองนิดๆ */
+.gu-flag { transform-box: fill-box; transform-origin: 0 50%; animation: gu-wave 1.6s ease-in-out infinite; }
+@keyframes gu-wave { 50% { transform: skewY(6deg) scaleX(.94); } }
+.gu-bounce { animation: gu-ball 1.1s cubic-bezier(.5, 0, .5, 1) infinite; }
+@keyframes gu-ball { 50% { transform: translateY(-12px); } }
+.gu-flicker { transform-box: fill-box; transform-origin: 50% 100%; animation: gu-fire .5s ease-in-out infinite alternate; }
+@keyframes gu-fire { to { transform: scale(.9, 1.08) skewX(3deg); } }
+.gu-blink { animation: gu-blink 1s steps(1) infinite; }
+@keyframes gu-blink { 50% { opacity: 0; } }
+.gu-beat { transform-box: fill-box; transform-origin: 50% 50%; animation: gu-beat 1.2s ease-in-out infinite; }
+@keyframes gu-beat { 15% { transform: scale(1.15); } 30% { transform: scale(1); } 45% { transform: scale(1.1); } }
+.gu-glow { animation: gu-glow 2.2s ease-in-out infinite; }
+@keyframes gu-glow { 50% { opacity: .75; } }
+
+/* ป้ายช่วงวัย (กระดาษขาว + เทป) มุมขวาบน */
+.gu-cap {
+    position: absolute; right: 22px; top: 26px; z-index: 6;
+    background: #FFFDF8; padding: 7px 14px 6px; white-space: nowrap;
+    font-size: 15px; font-weight: 500; color: #4A3B32;
+    rotate: 3deg;
+}
+.gu-year { display: block; font-size: 21px; font-weight: 600; line-height: 1.45; text-align: center; }   /* เผื่อสระล่าง (อนุบาล) ไม่ชนบรรทัดล่าง */
+.gu-place { display: block; font-size: 11.5px; line-height: 1.6; margin-top: 1px; color: #8B6A50; text-align: center; }
+.gu-cap.is-tick { animation: gu-tick .45s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes gu-tick { 0% { transform: scale(.8) rotate(-5deg); } 100% { transform: none; } }
+
+/* ตัวการ์ตูนเดินบนผิวโลก: walker หมุนรอบจุดกลางโลก (growup.js ตั้ง transform ทุกเฟรม), เท้าแตะผิวโลก */
+.gu-walker { position: absolute; left: 180px; top: 180px; width: 0; height: 0; transform-origin: 0 0; z-index: 3; }
+.gu-fig {
+    position: absolute; left: 0; bottom: 0; height: var(--h, 120px);
+    translate: -50% 0; transform-origin: 50% 100%; transition: transform .22s ease-out;
+}
+.gu-walker.is-flip .gu-fig { transform: scaleX(0); transition: transform .2s ease-in; }   /* หันหน้า = พลิกเหมือนการ์ด */
+/* ก้าวเดินพร้อมกัน: ทั้งสองคนจังหวะเดียวกันเป๊ะ เด้งทุกก้าว */
+.gu-wig { height: 100%; transform-origin: 50% 100%; animation: gu-walk .56s ease-in-out infinite; }
+.gu-wig img { display: block; height: 100%; width: auto; filter: drop-shadow(0 3px 3px rgba(60, 40, 30, .28)); }
+.gu-shadow { position: absolute; left: 18%; right: 18%; bottom: -5px; height: 9px; border-radius: 50%; background: rgba(90, 60, 40, .2); animation: gu-shadow .56s ease-in-out infinite; }
+@keyframes gu-walk {
+    0%, 100% { transform: translateY(0) rotate(-1.5deg) scale(1.02, .98); }
+    50% { transform: translateY(-6px) rotate(1.5deg); }
+}
+@keyframes gu-shadow { 50% { transform: scale(.8); opacity: .7; } }
+/* ช่วงสุดท้าย (ตอนนี้): กระโดดดีใจพร้อมกัน + หัวใจลอย */
+.gu.is-final .gu-wig { animation: gu-jump 1.8s ease-in-out infinite; }
+.gu.is-final .gu-shadow { animation: none; }
+@keyframes gu-jump {
+    0%, 40%, 100% { transform: none; }
+    8% { transform: scale(1.06, .92); }
+    20% { transform: translateY(-18px) scale(.97, 1.04); }
+    32% { transform: scale(1.05, .95); }
+}
+.gu.is-night .gu-cap { background: #FFF4E6; }
+
+.gu-bit {
+    position: absolute; z-index: 6; border-radius: 1px;
+    box-shadow: 0 1px 1px rgba(60, 40, 30, .18);
+    animation: gu-bit 1.7s cubic-bezier(.2, .7, .4, 1) both;
+}
+@keyframes gu-bit {
+    0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+    45% { transform: translate(calc(var(--dx) * .6), var(--dy)) rotate(calc(var(--rr) * .5)); opacity: 1; }
+    100% { transform: translate(var(--dx), calc(var(--dy) + 110px)) rotate(var(--rr)); opacity: 0; }
+}
+.gu-heart { position: absolute; z-index: 6; animation: gu-heart 2.7s ease-out both; }
+.gu-heart svg { width: 26px; height: auto; }
+@keyframes gu-heart {
+    0% { opacity: 0; transform: scale(.3); }
+    20% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: translate(var(--dx), -80px) scale(.9) rotate(10deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .gu-wig, .gu-shadow, .gu-heart, .gu-bit, .gu-deco, .gu-flag, .gu-bounce, .gu-flicker, .gu-beat { animation: none !important; }
+}
+
+/* ปกซิงเกิล "เพลงถึงคนจ๋วยยย" บนซองแผ่นเสียง */
+.rec-cover {
+    position: absolute; inset: 8px; overflow: hidden;
+    background-color: #EFDCC6;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+}
+.rec-cover::before {   /* แผ่นเสียงโผล่มุมขวาล่าง */
+    content: ''; position: absolute; width: 84px; height: 84px; right: -34px; bottom: -34px; border-radius: 50%;
+    background: radial-gradient(circle, #F6CAD6 0 13px, #1E1A19 14px 15px, transparent 15px),
+                repeating-radial-gradient(circle, #2B2422 0 3px, #1E1A19 3px 6px);
+}
+.rec-cover > * { position: relative; }
+.rec-cover-small { font-size: 16px; color: #A0704C; line-height: 1; margin-bottom: 2px; }
+.rec-cover-t1 { font-size: 16px; color: #8B5E3C; line-height: 1.2; }
+.rec-cover-t2 { font-size: 26px; font-weight: 600; color: #4A3B32; line-height: 1.15; letter-spacing: -.5px; }
+.rec-cover-heart { margin-top: 4px; }
+.rec-cover-side { position: absolute; left: 10px; bottom: 6px; font-size: 17px; color: #8B5E3C; }
+
+/* ปุ่มไปหน้าถัดไป (มีจดหมาย / มีเพลง): กรอบน้ำตาลรอบป้าย + เต้นเบาๆ ให้รู้ว่ากดได้
+   ป้ายตัดทรงด้วย clip-path เลยใช้ drop-shadow 4 ทิศบนตัวห่อแทน border */
+.cg-cta {
+    display: inline-block;
+    filter: drop-shadow(2px 0 0 #8B5E3C) drop-shadow(-2px 0 0 #8B5E3C) drop-shadow(0 2px 0 #8B5E3C) drop-shadow(0 -2px 0 #8B5E3C)
+            drop-shadow(0 5px 6px rgba(60, 40, 30, .3));
+    animation: ld-pulse 1.8s ease-in-out infinite;
+}
+.cg-cta .cg-tag { font-weight: 700; }
+.letter-go { display: flex; justify-content: flex-end; margin-top: 14px; padding-right: 4px; }
+@media (prefers-reduced-motion: reduce) { .cg-cta { animation: none; } }
+
+/* 1:52 ปุ่ม "มีอะไรอยากบอก ♡" บนโลกใบเล็ก ให้เธอกดเปิดอ่านเอง */
+.rec-read {
+    position: absolute; left: 0; right: 0; top: 690px; z-index: 14;
+    display: flex; flex-direction: column; align-items: center;
+    opacity: 0; translate: 0 24px; pointer-events: none;
+    transition: opacity .9s ease, translate .9s cubic-bezier(.22, .9, .3, 1);
+}
+.rec-read.is-in { opacity: 1; translate: 0 0; pointer-events: auto; }
+#recordStage.is-reading .rec-read { opacity: 0 !important; pointer-events: none; }
+.rec-read-btn { font-size: 18px; padding: 9px 22px; }
+
+/* บอลลูนคำพูดระหว่างเดิน (growup.js วางเหนือหัวคนพูดทุกเฟรม) */
+.gu-say {
+    position: absolute; z-index: 7; translate: -50% -100%;
+    background: #FFFDF8; color: #4A3B32; padding: 6px 12px 5px; border-radius: 14px 16px 15px 13px;
+    font-size: 13.5px; line-height: 1.55; text-align: center; white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(60, 40, 30, .2), 0 6px 10px -6px rgba(60, 40, 30, .4);
+    animation: gu-say .4s cubic-bezier(.3, 1.6, .5, 1) both;
+}
+.gu-say::after {   /* หางบอลลูนชี้ลงไปหาคนพูด */
+    content: ''; position: absolute; left: var(--tail, 50%); bottom: -7px; margin-left: -7px;   /* --tail: growup.js ให้หางชี้หัวคนพูด */
+    border: 7px solid transparent; border-bottom: 0; border-top-color: #FFFDF8;
+}
+.gu-say--big { font-size: 15px; font-weight: 500; padding: 7px 14px 6px; }
+.gu-say.is-out { opacity: 0; transform: scale(.8); transition: opacity .25s, transform .25s; }
+@keyframes gu-say { from { opacity: 0; transform: scale(.4) translateY(8px); } }
+
+/* ท่าระหว่างเดิน: เธอหันกลับมา / หยุดยืนคุย / เขาวิ่งตาม */
+.gu-wig img { transition: transform .25s ease; }
+.gu-walker.is-back .gu-wig img { transform: scaleX(-1); }
+.gu-walker.is-idle .gu-wig { animation: gu-idle 1.5s ease-in-out infinite; }
+.gu-walker.is-idle .gu-shadow { animation: none; }
+@keyframes gu-idle { 50% { transform: rotate(1.5deg) scale(1.01, .99); } }
+.gu-walker.is-run .gu-wig, .gu-walker.is-run .gu-shadow { animation-duration: .3s; }
