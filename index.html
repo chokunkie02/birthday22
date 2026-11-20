@@ -10,10 +10,13 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500&family=Mali:wght@400;500;600&family=Caveat:wght@500;700&display=block" rel="stylesheet">
     <link rel="stylesheet" href="theme.css?v=3">
-    <link rel="stylesheet" href="collage.css?v=25">
+    <link rel="stylesheet" href="collage.css?v=26">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* ล็อกหน้าไม่ให้เลื่อน/ดึงรีเฟรช → แถบเบราว์เซอร์จะไม่ยืดหดระหว่างเล่น
+           (การลากแผ่นเสียง ปัดเป่าเทียน แตะกระดาษ ใช้ pointer events บนชิ้นนั้นๆ เลยไม่กระทบ) */
         html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+        body { position: fixed; inset: 0; width: 100%; }
         body { font-family: 'Kanit', sans-serif; background: var(--bg-color); -webkit-tap-highlight-color: transparent;
                user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }   /* ปัด/ลากแล้วไม่เลือกข้อความ */
         img { -webkit-user-drag: none; }
@@ -66,6 +69,8 @@
                     </div>
                 </div>
             </div>
+            <!-- ปุ่มเต็มจอ: เฉพาะ Chrome บน Android ที่รองรับ (เบราว์เซอร์อื่น/ในแอป IG, LINE ซ่อนไว้) -->
+            <button id="fsBtn" class="ld-fs" hidden>⛶ เต็มจอ</button>
         </div>
     </section>
 
@@ -269,7 +274,7 @@
                     <div class="cg-thai" style="font-size:16px; line-height:26px; color:#4A3B32;">เย้~ ขอให้สมหวังทุกอย่างนะ</div>
                 </div>
             </div>
-            <div class="cg-reveal cg-lift" id="cakeNext" style="position:absolute; left:160px; top:716px; rotate:5deg;">
+            <div class="cg-reveal cg-lift" id="cakeNext" style="position:absolute; left:128px; top:716px; rotate:4deg;">
                 <span class="cg-cta"><button id="toLetter" class="cg-tag">มีจดหมายด้วยนะ ✉︎</button></span>
             </div>
         </div>
@@ -551,10 +556,10 @@
     <!-- สคริปต์อยู่ท้ายหน้า: หน้าโหลด (0-100%) ขึ้นให้เห็นทันที ไม่ต้องรอดาวน์โหลด Tone.js ก่อน -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <script src="music.js?v=17"></script>
-    <script src="collage.js?v=3"></script>
+    <script src="collage.js?v=4"></script>
     <script src="bouquet.js?v=8"></script>
     <script src="record.js?v=9"></script>
-    <script src="growup.js?v=16"></script>
+    <script src="growup.js?v=17"></script>
     <script>
         // =================================================================
         // แก้ข้อความ/รหัสได้ตรงนี้
@@ -619,7 +624,7 @@
                 { w: 1.35, height: 160, ratio: .913, place: 'ทุ่งใหญ่วิทยาคม', years: [['ม.4', 0], ['ม.5', 1 / 3], ['ม.6', 2 / 3]],
                   events: { stop: [.28, .74], turn: [.28, .74], says: [['her', 'จบ ม.6 คุณจะเรียนอะไร?', .3, .52], ['him', 'ไว้จะมาบอกนะ', .53, .74]] } },
                 { w: 1.35, height: 168, ratio: .907, place: 'ม.อ. & มวล.', years: [['ปี 1', 0], ['ปี 2', .67]],
-                  events: { stop: [.28, .74], turn: [.46, .74], says: [['him', 'เรียนวิศวะคอมนะ<br>ที่บอกว่าจะมาบอกไง', .3, .55], ['her', 'อ๋อออ', .56, .74]] } },
+                  events: { stop: [.28, .74], turn: [.46, .74], says: [['him', 'เรียนวิศวะ AI นะ<br>ที่บอกว่าจะมาบอกไง', .3, .55], ['her', 'อ๋อออ', .56, .74]] } },
                 { w: .55, height: 172, ratio: .934, place: 'ม.อ. & มวล.', years: [['ปี 2', 0]] },   // รอบสุดท้ายเดินแค่ถึงกลางโลก
             ],
             final: { height: 172, ratio: .928, year: 'ปี 3', place: 'ตอนนี้ ♡', hold: 5, say: 'สุขสันต์วันเกิดนะ ♡' },   // หันหน้ามายืนดุ๊กดิ๊ก 5 วิ
@@ -1129,6 +1134,20 @@
                 r.setAttribute('aria-hidden', 'false');
                 readyBtn.tabIndex = 0;
             }
+
+            // ปุ่มเต็มจอ (Android Chrome เท่านั้น)
+            (function fullscreenButton() {
+                const btn = document.getElementById('fsBtn');
+                const ua = navigator.userAgent;
+                const inApp = /Instagram|FBAN|FBAV|Line\/|KAKAOTALK|Twitter|TikTok|; wv\)/i.test(ua);
+                const ok = /Android/i.test(ua) && !inApp && document.fullscreenEnabled && document.documentElement.requestFullscreen;
+                if (!ok) return;
+                btn.hidden = false;
+                btn.addEventListener('click', () => {
+                    document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => { btn.hidden = true; });
+                });
+                document.addEventListener('fullscreenchange', () => { btn.hidden = !!document.fullscreenElement; });
+            })();
 
             readyBtn.addEventListener('click', () => {
                 startMusic();                       // การกดปุ่ม = มือถือยอมให้เล่นเสียง

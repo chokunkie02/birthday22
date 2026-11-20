@@ -1,6 +1,6 @@
 /* =====================================================================
    Collage motion
-   - fit():  ย่อ/ขยายผืน 375x812 ให้พอดีจอมือถือทุกรุ่น
+   - fit():  ย่อ/ขยายผืน 375x812 ให้พอดีพื้นที่ที่มองเห็นจริงของทุกเบราว์เซอร์ (visualViewport + safe area)
    - place(): แปะชิ้นส่วนลงทีละชิ้นตามลำดับ data-o
    - panTo(): ตอนพิมพ์รหัส เลื่อนทั้งหน้าขึ้นให้ตั๋วพ้นคีย์บอร์ด
    ===================================================================== */
@@ -8,21 +8,58 @@
     const W = 375, H = 812;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    function fit(stage) {
+    /* ---------- พื้นที่ที่มองเห็นจริง (ทุกเบราว์เซอร์มือถือ แถบบน-ล่างสูงไม่เท่ากัน) ----------
+       ใช้ visualViewport (ความสูงจริงหลังหักแถบเบราว์เซอร์) แล้วตั้ง --app-h ให้ฉากทุกฉาก
+       หักขอบกล้อง/ขอบโค้งด้วย env(safe-area-inset-*) แล้วย่อผืน 375x812 ให้พอดีทั้งผืน ไม่ล้นจอ */
+    const root = document.documentElement;
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;' +
+        'padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);';
+    (document.body || root).appendChild(probe);
+    function insets() {
+        const cs = getComputedStyle(probe);
+        return { t: parseFloat(cs.paddingTop) || 0, r: parseFloat(cs.paddingRight) || 0, b: parseFloat(cs.paddingBottom) || 0, l: parseFloat(cs.paddingLeft) || 0 };
+    }
+    function visibleHeight() {
+        const vv = window.visualViewport;
+        // ไม่ใช้ค่าตอนผู้ใช้ซูมนิ้ว (scale > 1) — ใช้ความสูงหน้าต่างแทน
+        return vv && vv.scale <= 1.01 ? vv.height : window.innerHeight;
+    }
+
+    const fitted = new Set();
+    function applyFit(stage) {
         const canvas = stage.querySelector('.cg-canvas');
-        const apply = () => {
-            const sw = stage.clientWidth, sh = stage.clientHeight;
-            // พอดีความกว้างเป็นหลัก ยอมให้ขอบบน/ล่างล้นจอได้นิดหน่อย (คอลลาจล้นขอบได้)
-            const k = Math.min(sw / W, (sh / H) * 1.12);
-            canvas.style.setProperty('--k', k);
-            canvas.style.setProperty('--x', ((sw - W * k) / 2) + 'px');
-            canvas.style.setProperty('--y', ((sh - H * k) / 2) + 'px');
-        };
-        apply();
-        if (!stage.dataset.fitted) {
-            stage.dataset.fitted = '1';
-            window.addEventListener('resize', apply);
-        }
+        if (!canvas) return;
+        const sw = stage.clientWidth, sh = stage.clientHeight;
+        if (!sw || !sh) return;
+        const ins = insets();
+        const aw = Math.max(1, sw - ins.l - ins.r), ah = Math.max(1, sh - ins.t - ins.b);
+        // พอดีทั้งความกว้างและความสูง: ทุกอย่างบนผืนอยู่ในจอเสมอ ไม่โดนแถบบัง
+        const k = Math.min(aw / W, ah / H);
+        canvas.style.setProperty('--k', k);
+        canvas.style.setProperty('--x', (ins.l + (aw - W * k) / 2) + 'px');
+        canvas.style.setProperty('--y', (ins.t + (ah - H * k) / 2) + 'px');
+    }
+    let queued = false;
+    function refit() {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(() => {
+            queued = false;
+            root.style.setProperty('--app-h', visibleHeight() + 'px');
+            fitted.forEach(applyFit);
+        });
+    }
+    root.style.setProperty('--app-h', visibleHeight() + 'px');
+    if (window.visualViewport) visualViewport.addEventListener('resize', refit);
+    window.addEventListener('resize', refit);
+    window.addEventListener('orientationchange', () => { refit(); setTimeout(refit, 350); setTimeout(refit, 900); });   // บางเครื่องแจ้งขนาดใหม่ช้า
+    document.addEventListener('fullscreenchange', () => { refit(); setTimeout(refit, 350); });
+
+    function fit(stage) {
+        fitted.add(stage);
+        root.style.setProperty('--app-h', visibleHeight() + 'px');
+        applyFit(stage);
     }
 
     function place(stage, delay = 450) {
@@ -100,5 +137,5 @@
         place(stage);
     }
 
-    window.Collage = { fit, place, panTo, photos, tear, confetti, show };
+    window.Collage = { fit, refit, place, panTo, photos, tear, confetti, show };
 })();

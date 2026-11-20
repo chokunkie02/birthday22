@@ -12,6 +12,7 @@
     max-width: 480px;
     height: 100vh;
     height: 100dvh;
+    height: var(--app-h, 100dvh);   /* ความสูงที่มองเห็นจริง (collage.js วัดจาก visualViewport) */
     margin: 0 auto;
     overflow: hidden;
     background: var(--bg-color);
@@ -296,7 +297,9 @@
    ===================================================================== */
 .scene {
     position: fixed;
-    inset: 0;
+    top: 0; left: 0; right: 0;
+    height: 100vh; height: 100dvh;
+    height: var(--app-h, 100dvh);   /* ไม่ใช้ inset: 0 — แถบเบราว์เซอร์แต่ละเจ้าสูงไม่เท่ากัน */
     opacity: 0;
     visibility: hidden;
     transition: opacity 1.2s ease, visibility 0s 1.2s;
@@ -912,3 +915,15 @@
 .gu-walker.is-idle .gu-shadow { animation: none; }
 @keyframes gu-idle { 50% { transform: rotate(1.5deg) scale(1.01, .99); } }
 .gu-walker.is-run .gu-wig, .gu-walker.is-run .gu-shadow { animation-duration: .3s; }
+
+/* ปุ่มเต็มจอที่หน้าโหลด (Android Chrome) — อยู่ใต้การ์ด เลี่ยงขอบล่าง/ติ่งกล้อง */
+.ld-fs {
+    position: absolute; left: 50%; translate: -50% 0;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 22px);
+    font: 500 14px 'Mali', 'Kanit', sans-serif; color: #6B4A32;
+    background: #FFFDF8; border: 1.5px solid #C9A27E; border-radius: 999px;
+    padding: 7px 16px; min-height: 36px; cursor: pointer;
+    box-shadow: 0 3px 8px -4px rgba(60, 40, 30, .4);
+    -webkit-tap-highlight-color: transparent;
+}
+.ld-fs[hidden] { display: none; }
