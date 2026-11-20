@@ -15,7 +15,7 @@
     const PROP_ANGLE = 44;                // ของประกอบฉากอยู่ห่างจากยอดโลกกี่องศา
 
     let cfg, root, him, her, cap, capYear, capPlace, world, props, sky, skyDeco;
-    let lap = -1, label = '', faced = false, heartTimer = null, raf = null;
+    let lap = -1, label = '', faced = false, heartTimer = null, raf = null, faceT = 0, pair = null, held = false;
     let songSec = 0, songAt = 0, faceAt = 44;
     const $ = (id) => document.getElementById(id);
 
@@ -193,6 +193,7 @@
     // ---------- ตอนจบ: หยุดกลางโลก แล้วหันหน้ามาหากล้อง ----------
     function face() {
         faced = true;
+        faceT = performance.now();
         clearSays();
         [him, her].forEach(w => w.classList.remove('is-back', 'is-idle', 'is-run'));
         [him, her].forEach(w => w.classList.add('is-flip'));
@@ -206,18 +207,28 @@
             setTimeout(heart, 500);
             heartTimer = setInterval(heart, 1000);
             window.Music && Music.sfx('chime');
-            // สองคนพูดพร้อมกัน
+            // ขยับเข้ามาจับมือกัน: สลับเป็นภาพคู่จับมือ (ชิ้นเดียว) + หัวใจเด้งตรงมือ
+            if (pair && f.pair) setTimeout(() => {
+                held = true;
+                setFig(pair, cfg.dir + f.pair, f.pairHeight || f.height);
+                pair.classList.add('is-held');
+                const [hx, hy] = onSurface(0, (f.pairHeight || f.height) * .42);
+                burst(hx, hy, 12);
+                heart();
+                window.Music && Music.sfx('pop');
+            }, (f.holdAt || 1.9) * 1000);
+            // อวยพรจากเขา (หลังจับมือแล้ว)
             if (f.say) setTimeout(() => {
                 const b = makeSay(f.say);
                 b.classList.add('gu-say--big');
-                placeSay(b, ...headOf(-GAP / 2, f.height));
+                placeSay(b, ...headOf(held ? -f.headOffset || -9 : -GAP / 2, f.height));
                 // โชว์ 3.5 วิ แล้วค่อยๆ เฟดหาย (ใช้ Web Animations ให้เฟดนุ่มแน่นอน ไม่ชนกับแอนิเมชันตอนเด้งขึ้น)
                 setTimeout(() => {
                     const fade = b.animate([{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-8px)' }],
                         { duration: 1600, easing: 'ease-in-out', fill: 'forwards' });
                     fade.onfinish = () => b.remove();
                 }, f.sayMs || 3500);
-            }, 900);
+            }, (f.sayAt || 2.4) * 1000);
         }, 220);
         setLabel(cfg.final.year);
     }
@@ -263,9 +274,17 @@
         const lastLap = cfg.laps.length - 1;
         if (sec >= faceAt) {   // จบ: ยืนคู่กันกลางโลก
             if (lap !== lastLap) startLap(lastLap);
-            place(him, -GAP / 2); place(her, GAP / 2);
-            him.style.opacity = her.style.opacity = 1;
             if (!faced) face();
+            const f = cfg.final, el = (now - faceT) / 1000;
+            // ขยับเข้าหากัน (ease) ระหว่าง approachAt → holdAt
+            const a0 = f.approachAt || 1.1, a1 = f.holdAt || 1.9;
+            const pa = Math.max(0, Math.min(1, (el - a0) / (a1 - a0)));
+            const close = (GAP / 2 - (f.closeDeg || 8)) * (pa * pa * (3 - 2 * pa));
+            place(him, -GAP / 2 + close); place(her, GAP / 2 - close);
+            // ภาพแยกค่อยๆ จาง ภาพจับมือค่อยๆ ชัด
+            const ph = held ? Math.max(0, Math.min(1, (el - a1) / .35)) : 0;
+            him.style.opacity = her.style.opacity = 1 - ph;
+            if (pair) { place(pair, 0); pair.style.opacity = ph; }
             return;
         }
         const [i, p] = lapAt(sec);
@@ -342,6 +361,7 @@
 
     function preload() {
         const files = ['s7-him.webp', 's7-her.webp'];
+        if (cfg.final.pair) files.push(cfg.final.pair);
         cfg.laps.forEach((s, i) => files.push(`w${i + 1}-him.webp`, `w${i + 1}-her.webp`));
         return files.map(f => new Promise(r => {   // คืน promise ให้หน้าโหลดนับว่าเสร็จจริงเมื่อไหร่
             const im = new Image();
@@ -354,7 +374,7 @@
         cfg = config;
         root = $('growUp'); if (!root) return;
         him = $('guHim'); her = $('guHer'); cap = $('guCap'); capYear = $('guCapYear'); capPlace = $('guCapPlace');
-        world = $('guWorld'); props = $('guProps'); sky = $('guSky'); skyDeco = $('guSkyDeco');
+        world = $('guWorld'); props = $('guProps'); sky = $('guSky'); skyDeco = $('guSkyDeco'); pair = $('guPair');
         // แบ่งเวลาเดินตามน้ำหนัก w ของแต่ละรอบ แล้วเหลือเวลายืนหันหน้า cfg.final.hold วินาที
         const walk = cfg.span - cfg.final.hold;
         const total = cfg.laps.reduce((n, l) => n + (l.w || 1), 0);

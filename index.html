@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500&family=Mali:wght@400;500;600&family=Caveat:wght@500;700&display=block" rel="stylesheet">
     <link rel="stylesheet" href="theme.css?v=3">
-    <link rel="stylesheet" href="collage.css?v=26">
+    <link rel="stylesheet" href="collage.css?v=27">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         /* ล็อกหน้าไม่ให้เลื่อน/ดึงรีเฟรช → แถบเบราว์เซอร์จะไม่ยืดหดระหว่างเล่น
@@ -472,6 +472,8 @@
                     <!-- สองคนเดินบนผิวโลก (growup.js หมุนตำแหน่งให้ทุกเฟรม) -->
                     <div id="guHim" class="gu-walker"><div class="gu-fig"><i class="gu-shadow"></i><div class="gu-wig"><img alt=""></div></div></div>
                     <div id="guHer" class="gu-walker gu-walker--her"><div class="gu-fig"><i class="gu-shadow"></i><div class="gu-wig"><img alt=""></div></div></div>
+                    <!-- ตอนจบ: ภาพคู่จับมือ (สลับมาแทนสองคนแยกตอนขยับเข้าหากัน) -->
+                    <div id="guPair" class="gu-walker gu-walker--pair" style="opacity:0"><div class="gu-fig"><i class="gu-shadow"></i><div class="gu-wig"><img alt=""></div></div></div>
                 </div>
                 <div id="guCap" class="gu-cap cg-lift">
                     <div class="cg-tape" style="width:44px; top:-9px; left:50%; margin-left:-22px; transform:rotate(-4deg);"></div>
@@ -559,7 +561,7 @@
     <script src="collage.js?v=4"></script>
     <script src="bouquet.js?v=8"></script>
     <script src="record.js?v=9"></script>
-    <script src="growup.js?v=17"></script>
+    <script src="growup.js?v=18"></script>
     <script>
         // =================================================================
         // แก้ข้อความ/รหัสได้ตรงนี้
@@ -627,7 +629,9 @@
                   events: { stop: [.28, .74], turn: [.46, .74], says: [['him', 'เรียนวิศวะ AI นะ<br>ที่บอกว่าจะมาบอกไง', .3, .55], ['her', 'อ๋อออ', .56, .74]] } },
                 { w: .55, height: 172, ratio: .934, place: 'ม.อ. & มวล.', years: [['ปี 2', 0]] },   // รอบสุดท้ายเดินแค่ถึงกลางโลก
             ],
-            final: { height: 172, ratio: .928, year: 'ปี 3', place: 'ตอนนี้ ♡', hold: 5, say: 'สุขสันต์วันเกิดนะ ♡' },   // หันหน้ามายืนดุ๊กดิ๊ก 5 วิ
+            final: { height: 172, ratio: .928, year: 'ปี 3', place: 'ตอนนี้ ♡', hold: 5, say: 'สุขสันต์วันเกิดนะ ♡',
+                     // หันหน้ามา → approachAt วิ ขยับเข้าหากัน → holdAt วิ จับมือ (สลับเป็นภาพคู่) → sayAt วิ อวยพร
+                     pair: 'hold7.webp', pairHeight: 172, approachAt: 1.1, holdAt: 1.9, sayAt: 2.4, closeDeg: 8, headOffset: 6 },
         };
         const PALETTE = ['#E7D3BD', '#C9A27E', '#8B5E3C', '#F6CAD6', '#FFFFFF', '#C9D8BE'];
 

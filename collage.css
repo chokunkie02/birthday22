@@ -927,3 +927,8 @@
     -webkit-tap-highlight-color: transparent;
 }
 .ld-fs[hidden] { display: none; }
+
+/* ตอนจบ: ภาพคู่จับมือ เด้งขึ้นนิดๆ ตอนสลับเข้ามา */
+.gu-walker--pair { z-index: 4; }
+.gu-walker--pair.is-held .gu-fig { animation: gu-holdpop .6s cubic-bezier(.3, 1.4, .5, 1); }
+@keyframes gu-holdpop { 0% { transform: scale(.94); } 60% { transform: scale(1.04, .97); } 100% { transform: none; } }
