@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&family=Mali:wght@400;500;600&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="theme.css?v=3">
-    <link rel="stylesheet" href="collage.css?v=4">
+    <link rel="stylesheet" href="collage.css?v=5">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <script src="music.js?v=4"></script>
     <script src="collage.js?v=3"></script>
@@ -85,7 +85,8 @@
             <div class="cg-piece cg-lift" id="pin-container" data-o="9" style="--r:-3deg; left:24px; top:414px; width:326px;">
                 <div class="cg-ticket cg-grain" style="position:relative;">
                     <div class="cg-ticket-label">ADMIT ONE · NO.</div>
-                    <input type="text" id="passwordInput" class="cg-ticket-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="รหัสผ่าน 4 หลัก" placeholder="____">
+                    <!-- readonly + inputmode=none: ไม่เปิดแป้นของมือถือ (ใช้แป้นกระดาษด้านล่างแทน หน้าเว็บจะไม่ขยับ) -->
+                    <input type="text" id="passwordInput" class="cg-ticket-input" readonly inputmode="none" tabindex="-1" maxlength="4" autocomplete="off" aria-label="รหัสผ่าน 4 หลัก" placeholder="____">
                     <div class="cg-thai" style="font-size:13px; color:#A0704C; margin-top:4px;">ใส่รหัส 4 หลักเพื่อเข้าไปนะ <svg viewBox="0 0 34 30" width="13" height="11" style="vertical-align:-2px" aria-hidden="true"><path d="M17 28C3 18 0 10 5 5C9 1 15 3 17 8C19 3 25 1 29 5C34 10 31 18 17 28Z" fill="#A0704C"/></svg></div>
                     <button id="confirmButton" class="cg-stamp" aria-label="ยืนยันรหัส">OK</button>
                 </div>
@@ -125,6 +126,28 @@
             <div class="cg-piece" data-o="16" style="--r:6deg; left:150px; top:736px;"><span class="cg-emoji cg-bob" style="font-size:36px;">🐈‍⬛</span></div>
             <div class="cg-piece" data-o="16" style="--r:-10deg; left:196px; top:560px;"><span class="cg-emoji" style="font-size:26px;">🫶🏻</span></div>
             <div class="cg-piece" data-o="16" style="--r:20deg; left:84px; top:748px;"><span class="cg-emoji" style="font-size:24px;">🍃</span></div>
+
+            <!-- แป้นตัวเลขกระดาษ: เลื่อนขึ้นมาเมื่อแตะตั๋ว (ไม่ใช้แป้นของมือถือ หน้าเว็บจะไม่ลอย) -->
+            <div id="keypad" class="cg-keypad">
+                <div class="cg-lift" style="position:relative;">
+                    <div class="cg-tape cg-tape--lilac" style="width:70px; top:-8px; left:40px; transform:rotate(-6deg);"></div>
+                    <div class="cg-tape" style="width:60px; top:-8px; right:36px; transform:rotate(5deg);"></div>
+                    <div class="cg-mount cg-tear cg-grain cg-keygrid" data-tear="7">
+                        <button class="cg-key" data-key="1" style="background-color:#F6EEE3; --kr:-2deg;" aria-label="1">1</button>
+                        <button class="cg-key" data-key="2" style="background-color:#FFFDF8; --kr:1.5deg;" aria-label="2">2</button>
+                        <button class="cg-key" data-key="3" style="background-color:#E7D3BD; --kr:-1deg;" aria-label="3">3</button>
+                        <button class="cg-key" data-key="4" style="background-color:#FFFDF8; --kr:2deg;" aria-label="4">4</button>
+                        <button class="cg-key" data-key="5" style="background-color:#E3CDAF; --kr:-1.5deg;" aria-label="5">5</button>
+                        <button class="cg-key" data-key="6" style="background-color:#F6EEE3; --kr:1deg;" aria-label="6">6</button>
+                        <button class="cg-key" data-key="7" style="background-color:#E7D3BD; --kr:1.5deg;" aria-label="7">7</button>
+                        <button class="cg-key" data-key="8" style="background-color:#F6EEE3; --kr:-2deg;" aria-label="8">8</button>
+                        <button class="cg-key" data-key="9" style="background-color:#FFFDF8; --kr:1deg;" aria-label="9">9</button>
+                        <button class="cg-key cg-key--word" data-key="del" style="background-color:#FFFDF8; --kr:-1deg;" aria-label="ลบ">ลบ</button>
+                        <button class="cg-key" data-key="0" style="background-color:#E3CDAF; --kr:2deg;" aria-label="0">0</button>
+                        <button class="cg-key cg-key--word" data-key="close" style="background-color:#FFFDF8; --kr:1deg;" aria-label="เก็บ ↓">เก็บ ↓</button>
+                    </div>
+                </div>
+            </div>
         </div>
       </div>
     </section>
@@ -422,24 +445,57 @@
             if (pinAccepted || !pin) return;
             if (pin === CONFIG.correctPin) {
                 pinAccepted = true;
-                passwordInput.blur();
-                Collage.panTo(gateStage, null);
+                keypad.classList.remove('is-open');
                 Music.sfx('chime');
-                setTimeout(() => go('countdown'), 500);
+                setTimeout(() => go('countdown'), 700);
             } else {
                 pinContainer.classList.add('cg-wrong');
-                passwordInput.value = '';
-                setTimeout(() => pinContainer.classList.remove('cg-wrong'), 500);
+                Music.sfx('rip');
+                setTimeout(() => { passwordInput.value = ''; pinContainer.classList.remove('cg-wrong'); }, 500);
             }
         }
-        passwordInput.addEventListener('input', () => {
-            const digits = passwordInput.value.replace(/[^0-9]/g, '').slice(0, 4);
-            if (passwordInput.value !== digits) passwordInput.value = digits;
-            if (digits.length === 4) setTimeout(checkPin, 250);   // iPhone ไม่มีปุ่ม Enter
+
+        // ---------- แป้นตัวเลขกระดาษ (แทนแป้นของมือถือ) ----------
+        const keypad = document.getElementById('keypad');
+        // จอเตี้ย (เช่น iPhone SE): เลื่อนคอลลาจขึ้นเท่าที่จำเป็นให้แป้นอยู่ในจอทั้งแผ่น
+        const gateCanvas = gateStage.querySelector('.cg-canvas');
+        function fitKeypad(open) {
+            if (!open) { gateCanvas.style.setProperty('--pan', '0px'); return; }
+            const k = parseFloat(gateCanvas.style.getPropertyValue('--k')) || 1;
+            const y = parseFloat(gateCanvas.style.getPropertyValue('--y')) || 0;
+            const bottom = y + (keypad.offsetTop + keypad.offsetHeight) * k;
+            const over = bottom - (gateStage.clientHeight - 6);
+            gateCanvas.style.setProperty('--pan', (over > 0 ? -over : 0) + 'px');
+        }
+        const keypadObserver = new MutationObserver(() => fitKeypad(keypad.classList.contains('is-open')));
+        keypadObserver.observe(keypad, { attributes: true, attributeFilter: ['class'] });
+        function openKeypad() { if (!pinAccepted) keypad.classList.add('is-open'); }
+        function pressKey(k) {
+            if (pinAccepted) return;
+            Music.sfx('pat');
+            if (k === 'del') { passwordInput.value = passwordInput.value.slice(0, -1); return; }
+            if (k === 'close') { keypad.classList.remove('is-open'); return; }
+            if (passwordInput.value.length >= 4) return;
+            passwordInput.value += k;
+            passwordInput.classList.remove('is-bump'); void passwordInput.offsetWidth; passwordInput.classList.add('is-bump');
+            if (passwordInput.value.length === 4) setTimeout(checkPin, 350);
+        }
+        keypad.addEventListener('click', (e) => {
+            const b = e.target.closest('[data-key]');
+            if (b) pressKey(b.dataset.key);
         });
-        passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') checkPin(); });
-        passwordInput.addEventListener('focus', () => setTimeout(() => Collage.panTo(gateStage, pinContainer, 90), 50));
-        passwordInput.addEventListener('blur', () => Collage.panTo(gateStage, null));
+        pinContainer.addEventListener('click', (e) => { if (!e.target.closest('#confirmButton')) openKeypad(); });
+        // แตะที่อื่นบนหน้า = เก็บแป้น
+        gateStage.addEventListener('pointerdown', (e) => {
+            if (!e.target.closest('#keypad, #pin-container')) keypad.classList.remove('is-open');
+        });
+        // คอม: พิมพ์ตัวเลขจากคีย์บอร์ดได้ด้วย
+        document.addEventListener('keydown', (e) => {
+            if (!scenes.gate.classList.contains('is-active')) return;
+            if (/^[0-9]$/.test(e.key)) { openKeypad(); pressKey(e.key); }
+            else if (e.key === 'Backspace') pressKey('del');
+            else if (e.key === 'Enter') checkPin();
+        });
         document.getElementById('confirmButton').addEventListener('click', checkPin);
         document.getElementById('hintButton').addEventListener('click', () => {
             document.getElementById('hintText').textContent = CONFIG.hintText;

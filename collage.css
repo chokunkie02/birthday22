@@ -566,3 +566,44 @@
 @media (prefers-reduced-motion: reduce) {
     #bouquet .bq, #bouquet .bq-bow, #bouquet .bq-tag, #bouquet .bq-back, #bouquet .bq-front { animation: none !important; opacity: 1 !important; transform: none !important; }
 }
+
+/* =====================================================================
+   แป้นตัวเลขกระดาษ (แทนแป้นของมือถือ)
+   ===================================================================== */
+.cg-ticket-input { pointer-events: none; caret-color: transparent; }   /* แตะตั๋ว = เปิดแป้นกระดาษ ไม่โฟกัสช่อง */
+#pin-container { cursor: pointer; }
+.cg-ticket-input.is-bump { animation: cg-bump .3s ease-out; }
+@keyframes cg-bump { 0% { transform: scale(1.12); } 100% { transform: scale(1); } }
+
+.cg-keypad {
+    position: absolute;
+    left: 20px;
+    top: 556px;
+    width: 336px;
+    z-index: 60;
+    transform: translateY(310px) rotate(2deg);
+    transition: transform .7s cubic-bezier(.22, .9, .3, 1);
+    pointer-events: none;
+}
+.cg-keypad.is-open { transform: translateY(0) rotate(-1deg); pointer-events: auto; }
+.cg-keygrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 9px 12px;
+    padding: 20px 20px 18px;
+}
+.cg-key {
+    height: 46px;
+    border: none;
+    border-radius: 2px;
+    font: 700 24px Georgia, serif;
+    color: #4A3020;
+    transform: rotate(var(--kr, 0deg));
+    box-shadow: 0 1px 1px rgba(60, 40, 30, .16), 0 5px 7px -4px rgba(60, 40, 30, .4);
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .12s ease;
+}
+.cg-key--word { font: 500 16px 'Mali', 'Kanit', sans-serif; color: #A0704C; }
+.cg-key:active { transform: rotate(var(--kr, 0deg)) scale(.9) translateY(2px); box-shadow: 0 1px 1px rgba(60, 40, 30, .16); }
