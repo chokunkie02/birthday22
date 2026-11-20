@@ -13,6 +13,10 @@
     let started = false, built = false, muted = false;
     let master, reverb, inst = {}, tracks = {}, current = null, wanted = 'gate';
     const LEVEL = -9;
+    const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const IS_PHONE = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+    // วางคิวเสียงล่วงหน้านานขึ้น (0.1 → 0.2 วิ): มือถือที่ทำงานหนักจะไม่เสียงขาด/โน้ตหลุด
+    try { Tone.context.lookAhead = 0.2; } catch (e) {}
 
     const sec = (bpm, beats) => beats * 60 / bpm;
 
@@ -248,7 +252,7 @@
         if (built) return;
         built = true;
         master = new Tone.Volume(-60).toDestination();
-        reverb = new Tone.Reverb({ decay: 3.8, wet: 0.34 }).connect(master);
+        reverb = new Tone.Reverb({ decay: IS_PHONE ? 2.4 : 3.8, wet: 0.34 })   /* มือถือ: เสียงก้องสั้นลง เบาเครื่อง */.connect(master);
         // เสียงประกอบ
         const fx = new Tone.Volume(-2).connect(reverb);
         inst.sparkle = new Tone.PolySynth(Tone.FMSynth, { harmonicity: 8, modulationIndex: 1.6, envelope: { attack: .002, decay: 1.2, sustain: 0, release: 1.2 } }).connect(fx);
@@ -287,7 +291,11 @@
     function start() {
         if (started) return;
         started = true;
-        unlockIOSSilentSwitch();
+        if (IS_IOS) unlockIOSSilentSwitch();   // ใช้เฉพาะ iPhone (Android ไม่ต้อง และอาจไปแย่งช่องเสียงกับ YouTube)
+        // แตะจอทุกครั้ง: ถ้ามือถือพักระบบเสียงไว้ ให้กลับมาทำงาน (การแตะคือจังหวะเดียวที่มือถือยอม)
+        ['pointerdown', 'touchend', 'click'].forEach(ev => document.addEventListener(ev, () => {
+            if (Tone.context.state !== 'running') Tone.context.resume().catch(() => {});
+        }, true));
         Tone.start().then(() => {
             build();
             Tone.Transport.start('+0.05');

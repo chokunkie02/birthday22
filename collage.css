@@ -304,6 +304,8 @@
     visibility: visible;
     transition: opacity 1.2s ease;
 }
+/* หน้าที่ไม่ได้เปิด: หยุดแอนิเมชันวนซ้ำทุกตัว ไม่ให้แย่งเครื่องตอนอยู่หน้าอื่น (เปิดหน้าไหนก็ขยับต่อตามปกติ) */
+.scene:not(.is-active) *, .scene:not(.is-active) *::before, .scene:not(.is-active) *::after { animation-play-state: paused !important; }
 
 /* ปุ่มเพลง: สติกเกอร์บนกระดาษฉีก */
 #musicBtn {
@@ -675,13 +677,13 @@
 .rec-vinyl {
     position: absolute; left: 104px; top: 501px; width: 170px; height: 170px;
     z-index: 3; cursor: grab; touch-action: none;
-    filter: drop-shadow(0 4px 6px rgba(30, 20, 15, .35));
     transform-origin: 85px 85px;
     transition: translate .6s cubic-bezier(.22, .9, .3, 1), transform 1.4s cubic-bezier(.22, .9, .3, 1);
 }
-.rec-vinyl.is-dragging { cursor: grabbing; transition: none; z-index: 70; filter: drop-shadow(0 12px 14px rgba(30, 20, 15, .4)); }
+.rec-vinyl.is-dragging { cursor: grabbing; transition: none; z-index: 70; }
+.rec-vinyl.is-dragging .rec-disc { box-shadow: 0 12px 16px rgba(30, 20, 15, .4); }
 .rec-vinyl.is-snapping { z-index: 8; }
-.rec-disc { display: block; }
+.rec-disc { display: block; border-radius: 50%; box-shadow: 0 4px 7px rgba(30, 20, 15, .35); will-change: transform; }
 #recordStage.is-playing .rec-disc { animation: rec-spin 1.8s linear infinite; }
 @keyframes rec-spin { to { transform: rotate(360deg); } }
 .rec-sleeve { z-index: 4; }
@@ -796,7 +798,7 @@
 @keyframes gu-tick { 0% { transform: scale(.8) rotate(-5deg); } 100% { transform: none; } }
 
 /* ตัวการ์ตูนเดินบนผิวโลก: walker หมุนรอบจุดกลางโลก (growup.js ตั้ง transform ทุกเฟรม), เท้าแตะผิวโลก */
-.gu-walker { position: absolute; left: 180px; top: 180px; width: 0; height: 0; transform-origin: 0 0; z-index: 3; }
+.gu-walker { position: absolute; left: 180px; top: 180px; width: 0; height: 0; transform-origin: 0 0; z-index: 3; will-change: transform, opacity; }
 .gu-fig {
     position: absolute; left: 0; bottom: 0; height: var(--h, 120px);
     translate: -50% 0; transform-origin: 50% 100%; transition: transform .22s ease-out;
@@ -864,15 +866,14 @@
 
 /* ปุ่มไปหน้าถัดไป (มีจดหมาย / มีเพลง): กรอบน้ำตาลรอบป้าย + เต้นเบาๆ ให้รู้ว่ากดได้
    ป้ายตัดทรงด้วย clip-path เลยใช้ drop-shadow 4 ทิศบนตัวห่อแทน border */
-.cg-cta {
-    display: inline-block;
-    filter: drop-shadow(2px 0 0 #8B5E3C) drop-shadow(-2px 0 0 #8B5E3C) drop-shadow(0 2px 0 #8B5E3C) drop-shadow(0 -2px 0 #8B5E3C)
-            drop-shadow(0 5px 6px rgba(60, 40, 30, .3));
-    animation: ld-pulse 1.8s ease-in-out infinite;
+.cg-cta {   /* กรอบน้ำตาล 2px รอบป้าย: พื้นหลังสีน้ำตาลตัดทรงป้ายเดียวกัน แล้วป้ายจริงซ้อนข้างใน */
+    display: inline-block; padding: 2px 2px 2px 3px; background: #8B5E3C; line-height: 0;
+    clip-path: polygon(15px 0, 100% 0, 100% 100%, 15px 100%, 0 50%);
 }
+.cg-cta .cg-tag { display: inline-block; line-height: normal; }
 .cg-cta .cg-tag { font-weight: 700; }
 .letter-go { display: flex; justify-content: flex-end; margin-top: 14px; padding-right: 4px; }
-@media (prefers-reduced-motion: reduce) { .cg-cta { animation: none; } }
+
 
 /* 1:52 ปุ่ม "มีอะไรอยากบอก ♡" บนโลกใบเล็ก ให้เธอกดเปิดอ่านเอง */
 .rec-read {

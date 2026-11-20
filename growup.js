@@ -236,10 +236,11 @@
     const headOf = (a, h) => onSurface(a, h + 8);
     // วางบอลลูนให้หางชี้ที่ (hx, hy); ตัวกล่องเลื่อนหลบขอบจอได้ แต่หางยังชี้หัวเหมือนเดิม
     function placeSay(el, hx, hy) {
-        const half = el.offsetWidth / 2, pad = 8, W = CX * 2;
+        if (!el._w) el._w = el.offsetWidth;   // วัดครั้งเดียว (วัดทุกเฟรมทำให้มือถือกระตุก)
+        const half = el._w / 2, pad = 8, W = CX * 2;
         const bx = Math.max(half + pad, Math.min(W - half - pad, hx));
         el.style.left = bx + 'px'; el.style.top = hy + 'px';
-        el.style.setProperty('--tail', Math.max(14, Math.min(el.offsetWidth - 14, half + hx - bx)) + 'px');
+        el.style.setProperty('--tail', Math.max(14, Math.min(el._w - 14, half + hx - bx)) + 'px');
     }
     function clearSays() {
         says.forEach(b => { b.classList.add('is-out'); setTimeout(() => b.remove(), 300); });
