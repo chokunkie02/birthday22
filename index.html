@@ -550,7 +550,7 @@
 
     <!-- สคริปต์อยู่ท้ายหน้า: หน้าโหลด (0-100%) ขึ้นให้เห็นทันที ไม่ต้องรอดาวน์โหลด Tone.js ก่อน -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
-    <script src="music.js?v=13"></script>
+    <script src="music.js?v=17"></script>
     <script src="collage.js?v=3"></script>
     <script src="bouquet.js?v=8"></script>
     <script src="record.js?v=9"></script>
@@ -1150,6 +1150,9 @@
         btn.textContent = 'เทสลำโพง';
         btn.style.cssText = 'position:fixed;right:6px;bottom:6px;z-index:99999;font:13px sans-serif;padding:8px 12px;border-radius:8px;border:0;background:#8B5E3C;color:#fff';
         document.body.appendChild(btn);
+        // ปุ่มเช็คเพิ่ม: ติ๊งจากช่องเสียงใหม่เอี่ยม / รีสตาร์ทช่องเสียงของเว็บ
+        const mkBtn = (label, bottom) => { const b = btn.cloneNode(); b.textContent = label; b.style.bottom = bottom + 'px'; document.body.appendChild(b); return b; };
+        const btnFresh = mkBtn('ติ๊งช่องใหม่', 48), btnRestart = mkBtn('รีสตาร์ทเสียง', 90);
 
         const log = [];
         const t0 = performance.now();
@@ -1163,10 +1166,10 @@
         // มิเตอร์: วัดสัญญาณที่ระบบเพลงของเว็บส่งออกจริง (ตรวจเจอ NaN ด้วย — ถ้ามี NaN เสียงจะเงียบถาวร)
         let an = null, buf = null, peak = 0, nan = false;
         function hookMeter() {
-            if (an || !window.Tone || !Tone.context || !Tone.Destination) return;
+            if (an || !window.Tone) return;
             try {
-                an = Tone.context.rawContext.createAnalyser(); an.fftSize = 1024;
-                Tone.connect(Tone.Destination.input, an);
+                an = Tone.getContext().rawContext.createAnalyser(); an.fftSize = 1024;
+                Tone.connect(Tone.getDestination().input, an);
                 buf = new Float32Array(an.fftSize);
             } catch (e) { note('meter err ' + e.message); }
         }
@@ -1180,7 +1183,7 @@
         // ปุ่มเทสลำโพง: เสียง "ติ๊ง" สั้นๆ ตรงไปลำโพงเลย
         btn.addEventListener('click', () => {
             try {
-                const raw = Tone.context.rawContext;
+                const raw = Tone.getContext().rawContext;
                 if (raw.state !== 'running') raw.resume();
                 const o = raw.createOscillator(), g = raw.createGain();
                 o.frequency.value = 660; g.gain.value = 0.25;
@@ -1190,8 +1193,23 @@
             } catch (e) { note('beep err ' + e.message); }
         });
 
+        btnFresh.addEventListener('click', () => {
+            try {
+                const AC = window.AudioContext || window.webkitAudioContext, c = new AC();
+                const o = c.createOscillator(), g = c.createGain();
+                o.frequency.value = 880; g.gain.value = 0.25; o.connect(g); g.connect(c.destination);
+                o.start(); o.stop(c.currentTime + 0.35);
+                note('fresh beep (' + c.state + ')');
+                setTimeout(() => c.close(), 800);
+            } catch (e) { note('fresh err ' + e.message); }
+        });
+        btnRestart.addEventListener('click', () => {
+            const raw = Tone.getContext().rawContext;
+            raw.suspend().then(() => raw.resume()).then(() => note('restarted (' + raw.state + ')')).catch(e => note('restart err ' + e.message));
+        });
+
         setInterval(() => {
-            const ctx = window.Tone && Tone.context;
+            const ctx = window.Tone && Tone.getContext();
             const st = ctx ? ctx.state : 'no Tone';
             if (st !== lastState) { note('audio=' + st); lastState = st; }
             const scene = [...document.querySelectorAll('.scene.is-active')].map(s => s.id.replace('scene-', '')).join(',');
@@ -1200,7 +1218,7 @@
             box.textContent = [
                 'scene: ' + scene,
                 'audio: ' + st + (ctx ? '  ' + ctx.rawContext.sampleRate + 'Hz  latency ' + Math.round((ctx.rawContext.baseLatency || 0) * 1000) + 'ms' : ''),
-                'transport: ' + (window.Tone ? Tone.Transport.state : '-') + '   muted: ' + (window.Music ? Music.muted : '-'),
+                'transport: ' + (window.Tone ? Tone.getTransport().state : '-') + '   muted: ' + (window.Music ? Music.muted : '-'),
                 'level: ' + level + '   fps: ' + fps,
             ].concat(log).join(NL);
             peak = 0;

@@ -15,8 +15,16 @@
     const LEVEL = -9;
     const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     const IS_PHONE = window.matchMedia && matchMedia('(pointer: coarse)').matches;
-    // วางคิวเสียงล่วงหน้านานขึ้น (0.1 → 0.2 วิ): มือถือที่ทำงานหนักจะไม่เสียงขาด/โน้ตหลุด
-    try { Tone.context.lookAhead = 0.2; } catch (e) {}
+    // ช่องเสียงแบบบัฟเฟอร์ใหญ่ (latencyHint: 'playback') — ค่าเดิม 'interactive' หน่วงแค่ ~4ms
+    // บน Android บางรุ่นช่องเสียงหน่วงต่ำจะค้างเงียบตอนเครื่องทำงานหนัก (ระบบยังบอก running แต่ไม่มีเสียงออก)
+    try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        const old = Tone.getContext();
+        Tone.setContext(new Tone.Context(new AC({ latencyHint: 'playback' })));   // Tone 14 ไม่อ่าน latencyHint เอง ต้องสร้างช่องเสียงเองแล้วส่งให้
+        try { old.rawContext.suspend(); } catch (e) {}   // ช่องเสียงเดิมของ Tone ไม่ได้ใช้แล้ว ปิดไว้ไม่ให้ค้างช่องลำโพง
+    } catch (e) {}
+    try { Tone.getContext().lookAhead = 0.2; } catch (e) {}
+    // หมายเหตุ: หลัง setContext ต้องใช้ Tone.getContext()/getTransport() เสมอ — Tone.context/Tone.Transport ยังชี้ช่องเสียงเก่า
 
     const sec = (bpm, beats) => beats * 60 / bpm;
 
@@ -282,7 +290,7 @@
             setTimeout(() => { if (current !== name) return; old.parts.forEach(p => p.stop()); old.bus.volume.value = -Infinity; }, 1500);
         }
         current = name;
-        const at = Tone.Transport.seconds + 0.05;
+        const at = Tone.getTransport().seconds + 0.05;
         tr.parts.forEach(p => p.start(at));
         tr.bus.volume.value = -40;
         tr.bus.volume.rampTo(0, 1.6);
@@ -294,11 +302,11 @@
         if (IS_IOS) unlockIOSSilentSwitch();   // ใช้เฉพาะ iPhone (Android ไม่ต้อง และอาจไปแย่งช่องเสียงกับ YouTube)
         // แตะจอทุกครั้ง: ถ้ามือถือพักระบบเสียงไว้ ให้กลับมาทำงาน (การแตะคือจังหวะเดียวที่มือถือยอม)
         ['pointerdown', 'touchend', 'click'].forEach(ev => document.addEventListener(ev, () => {
-            if (Tone.context.state !== 'running') Tone.context.resume().catch(() => {});
+            const c = Tone.getContext(); if (c.state !== 'running') c.resume().catch(() => {});
         }, true));
         Tone.start().then(() => {
             build();
-            Tone.Transport.start('+0.05');
+            Tone.getTransport().start('+0.05');
             master.volume.rampTo(muted ? -Infinity : LEVEL, 2.5);
             setTimeout(() => play(wanted), 80);
         }).catch(() => { started = false; });
@@ -332,8 +340,8 @@
     const lastAt = {};
     function sfx(kind, n = 0) {
         if (!built || muted) return;
-        if (Tone.context.state !== 'running') Tone.context.resume().catch(() => {});   // มือถือพักระบบเสียงไว้ → ปลุกกลับ
-        const now = Tone.now();
+        { const c = Tone.getContext(); if (c.state !== 'running') c.resume().catch(() => {}); }   // มือถือพักระบบเสียงไว้ → ปลุกกลับ
+        const now = Tone.getContext().now();
         // เครื่องเสียงเดี่ยว (noise/thump/blip) ห้ามสั่งเวลาซ้ำกัน → เลื่อนไปนิดถ้าชน
         const slot = (key) => { const t = Math.max(now, (lastAt[key] || 0) + .03); lastAt[key] = t; return t; };
         const noise = (freq, decay, dur, vol = -14) => {
