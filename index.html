@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500&family=Mali:wght@400;500;600&family=Caveat:wght@500;700&display=block" rel="stylesheet">
     <link rel="stylesheet" href="theme.css?v=3">
-    <link rel="stylesheet" href="collage.css?v=27">
+    <link rel="stylesheet" href="collage.css?v=31">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         /* ล็อกหน้าไม่ให้เลื่อน/ดึงรีเฟรช → แถบเบราว์เซอร์จะไม่ยืดหดระหว่างเล่น
@@ -69,7 +69,11 @@
                     </div>
                 </div>
             </div>
-            <!-- ปุ่มเต็มจอ: เฉพาะ Chrome บน Android ที่รองรับ (เบราว์เซอร์อื่น/ในแอป IG, LINE ซ่อนไว้) -->
+            <!-- ปุ่มใต้การ์ด: Chrome บน Android = เต็มจอ / เปิดจากในแอป IG, LINE = เปิดใน Chrome -->
+            <div id="fsHint" class="ld-fs-hint" hidden aria-hidden="true">
+                <span class="cg-hand" id="fsHintText">อย่าลืมกดเต็มจอด้วยนะ</span>
+                <svg viewBox="0 0 30 34" width="26" height="30"><path d="M12 3C20 10 6 18 15 28" stroke="#8B5E3C" stroke-width="2.6" stroke-dasharray="5 4" fill="none" stroke-linecap="round"/><path d="M8 23L15 31L22 24" stroke="#8B5E3C" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
             <button id="fsBtn" class="ld-fs" hidden>⛶ เต็มจอ</button>
         </div>
     </section>
@@ -560,7 +564,7 @@
     <script src="music.js?v=17"></script>
     <script src="collage.js?v=4"></script>
     <script src="bouquet.js?v=8"></script>
-    <script src="record.js?v=9"></script>
+    <script src="record.js?v=10"></script>
     <script src="growup.js?v=18"></script>
     <script>
         // =================================================================
@@ -655,6 +659,7 @@
             if (stage) Collage.show(stage); else Collage.tear(scene);
             if (window.Music) Music.scene(name);
             if (name === 'countdown') runCountdown();
+            if (name === 'countdown' && window.Record) Record.preload();   // ตัวเล่น YouTube เริ่มโหลดแต่เนิ่นๆ พอถึงหน้าแผ่นเสียงจะพร้อมเล่นทันที
             if (name === 'letter' && window.Record) { Record.preload(); GrowUp.preload(); }
             if (name === 'record' && window.Record) Record.enter();
             if (name === 'flowers') setTimeout(startFlowers, 1500);
@@ -926,7 +931,7 @@
                     Collage.confetti(stage, PALETTE, 54);
                     document.getElementById('cakeHint').classList.add('is-gone');
                     setTimeout(() => document.getElementById('cakeWish').classList.add('is-in'), 1100);
-                    setTimeout(() => document.getElementById('cakeNext').classList.add('is-in'), 2300);
+                    setTimeout(() => document.getElementById('cakeNext').classList.add('is-in'), 6000);   // ให้ฉลองกับเพลง Happy Birthday สักพักก่อน ปุ่มจดหมายค่อยขึ้น
                 }, 700);
             }
         })();
@@ -1139,18 +1144,47 @@
                 readyBtn.tabIndex = 0;
             }
 
-            // ปุ่มเต็มจอ (Android Chrome เท่านั้น)
-            (function fullscreenButton() {
+            // ปุ่มใต้การ์ดหน้าโหลด:
+            //  - Chrome บน Android → "⛶ เต็มจอ"
+            //  - เปิดจากในแอป (IG, LINE, Facebook ฯลฯ) → "เปิดใน Chrome" (ในแอปเพลงไม่เล่นเอง + ไม่มีเต็มจอ)
+            (function loadingButton() {
                 const btn = document.getElementById('fsBtn');
+                const hint = document.getElementById('fsHint');
+                const hintText = document.getElementById('fsHintText');
                 const ua = navigator.userAgent;
-                const inApp = /Instagram|FBAN|FBAV|Line\/|KAKAOTALK|Twitter|TikTok|; wv\)/i.test(ua);
-                const ok = /Android/i.test(ua) && !inApp && document.fullscreenEnabled && document.documentElement.requestFullscreen;
-                if (!ok) return;
-                btn.hidden = false;
+                const android = /Android/i.test(ua);
+                const ios = /iPhone|iPad|iPod/i.test(ua);
+                const inApp = /Instagram|FBAN|FBAV|FB_IAB|Line\/|KAKAOTALK|Twitter|TikTok|musical_ly|; wv\)/i.test(ua);
+                const show = (label, text) => { btn.textContent = label; hintText.textContent = text; btn.hidden = false; hint.hidden = false; };
+
+                if (inApp && android) {
+                    show('เปิดใน Chrome', 'เปิดในเบราว์เซอร์จะลื่นกว่านะ');
+                    btn.addEventListener('click', () => {
+                        const url = location.href;
+                        if (/Line\//i.test(ua)) {   // LINE มีวิธีเปิดเบราว์เซอร์ภายนอกของตัวเอง
+                            location.href = url + (url.includes('?') ? '&' : '?') + 'openExternalBrowser=1';
+                            return;
+                        }
+                        // Android: เปิดลิงก์เดียวกันใน Chrome (ถ้าไม่มี Chrome ให้ระบบเลือกเบราว์เซอร์ที่มี)
+                        const target = url.replace(/^https?:\/\//, '');
+                        location.href = 'intent://' + target + '#Intent;scheme=https;package=com.android.chrome;' +
+                            'S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
+                    });
+                    return;
+                }
+                if (inApp && ios) {   // iPhone สั่งเปิด Safari เองไม่ได้ → บอกวิธีแทน (ไม่มีปุ่ม)
+                    hintText.textContent = 'กด ⋯ มุมขวาบน แล้วเลือก "เปิดในเบราว์เซอร์" จะลื่นกว่านะ';
+                    hint.classList.add('is-text-only');
+                    hint.hidden = false;
+                    return;
+                }
+                const canFull = android && document.fullscreenEnabled && document.documentElement.requestFullscreen;
+                if (!canFull) return;
+                show('⛶ เต็มจอ', 'อย่าลืมกดเต็มจอด้วยนะ');
                 btn.addEventListener('click', () => {
-                    document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => { btn.hidden = true; });
+                    document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => { btn.hidden = hint.hidden = true; });
                 });
-                document.addEventListener('fullscreenchange', () => { btn.hidden = !!document.fullscreenElement; });
+                document.addEventListener('fullscreenchange', () => { btn.hidden = hint.hidden = !!document.fullscreenElement; });
             })();
 
             readyBtn.addEventListener('click', () => {

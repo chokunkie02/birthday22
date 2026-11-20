@@ -10,6 +10,7 @@
     let cfg, opts, player = null, ytReady = false, apiRequested = false, readyResolve = null;
     const readyPromise = new Promise(r => { readyResolve = r; });
     let placed = false, reading = false, pollTimer = null, fallbackTimer = null, page = 0, writing = null, duckTimer = null;
+    let wantPlay = false;   // วางแผ่นแล้วแต่ตัวเล่นยังไม่พร้อม → เล่นทันทีที่พร้อม
     const $ = (id) => document.getElementById(id);
 
     // ---------- YouTube ----------
@@ -26,7 +27,11 @@
                 width: 200, height: 113, videoId: cfg.video,
                 playerVars: { start: cfg.start, controls: 0, playsinline: 1, rel: 0, modestbranding: 1, disablekb: 1, fs: 0 },
                 events: {
-                    onReady: () => { ytReady = true; readyResolve(); },
+                    onReady: () => {
+                        ytReady = true; readyResolve();
+                        // วางแผ่นไปก่อนตัวเล่นพร้อม → เริ่มเพลงเลย (เธอแตะจอมาแล้ว มือถือยอมให้เล่น)
+                        if (wantPlay && playSong() && !$('recordStage').classList.contains('is-playing')) { try { player.setVolume(0); } catch (e) {} }
+                    },
                     // เพลงจบ → หยุดตัวเล่นไปเลย ไม่มีเสียงอะไรต่อ
                     onStateChange: (e) => { if (e.data === 0) { clearInterval(pollTimer); try { player.stopVideo(); } catch (err) {} } },
                 },
@@ -43,6 +48,8 @@
         return true;
     }
     const isPlaying = () => player && ytReady && player.getPlayerState && player.getPlayerState() === 1;
+    // กำลังเล่น หรือกำลังโหลดเพลงอยู่ (buffering) — ยังไม่ต้องโชว์ปุ่มแตะเพื่อฟัง
+    const isStarting = () => player && ytReady && player.getPlayerState && [1, 3].includes(player.getPlayerState());
 
     function watchSong() {
         clearInterval(pollTimer);
@@ -102,6 +109,7 @@
         vinyl.style.translate = `${p.x - (vinyl.offsetLeft + vinyl.offsetWidth / 2)}px ${p.y - (vinyl.offsetTop + vinyl.offsetHeight / 2)}px`;
         window.Music && Music.sfx('drop', 0);
         // สั่งเล่นทันทีตอนนิ้วปล่อย (ยังนับเป็นการแตะของผู้ใช้ มือถือจะยอมให้มีเสียง) แต่ปิดเสียงไว้ก่อนจนเข็มลง
+        wantPlay = true;
         if (playSong()) { try { player.setVolume(0); } catch (e) {} }
         setTimeout(() => {
             $('deckArm').classList.add('is-down');   // เข็มค่อยๆ ลง
@@ -111,11 +119,16 @@
             $('recordStage').classList.add('is-playing');
             $('sleeve').classList.add('is-away');
             $('recNow').classList.add('is-in');
-            if (player && ytReady) { player.seekTo(cfg.start, true); player.setVolume(100); player.playVideo(); }
+            if (player && ytReady) {
+                // ไม่ seek ซ้ำถ้าเพลงอยู่ที่ช่วงเริ่มแล้ว (seek ซ้ำ = โหลดใหม่ เพลงเริ่มช้า)
+                try { if (Math.abs(player.getCurrentTime() - cfg.start) > 3) player.seekTo(cfg.start, true); } catch (e) {}
+                player.setVolume(100); player.playVideo();
+            }
             watchSong();
             noteTimer = setInterval(spawnNote, 1100);
             // ถ้าเพลงไม่ยอมเล่น (เน็ตหลุด/เครื่องบล็อก) → ปุ่มแตะเพื่อฟัง, และสุดท้ายไม่ว่ายังไงก็ให้อ่านข้อความได้
-            fallbackTimer = setTimeout(() => { if (!isPlaying()) $('recTapPlay').classList.add('is-in'); }, 3500);
+            // ปุ่มแตะเพื่อฟังโผล่เฉพาะตอนเพลงไม่ขยับจริงๆ (ไม่นับช่วงกำลังโหลดเพลง) หลัง 9 วิ
+            fallbackTimer = setTimeout(() => { if (!isStarting()) $('recTapPlay').classList.add('is-in'); }, 9000);
             setTimeout(() => { if (!reading && !isPlaying()) showReadButton(); }, 15000);
         }, 1700);
     }

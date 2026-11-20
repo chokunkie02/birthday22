@@ -916,19 +916,35 @@
 @keyframes gu-idle { 50% { transform: rotate(1.5deg) scale(1.01, .99); } }
 .gu-walker.is-run .gu-wig, .gu-walker.is-run .gu-shadow { animation-duration: .3s; }
 
-/* ปุ่มเต็มจอที่หน้าโหลด (Android Chrome) — อยู่ใต้การ์ด เลี่ยงขอบล่าง/ติ่งกล้อง */
+/* ปุ่มเต็มจอที่หน้าโหลด (Android Chrome) — อยู่ใต้การ์ด เลี่ยงขอบล่าง/ติ่งกล้อง + ลูกศรวาดมือชี้ลงมา */
 .ld-fs {
     position: absolute; left: 50%; translate: -50% 0;
     bottom: calc(env(safe-area-inset-bottom, 0px) + 22px);
-    font: 500 14px 'Mali', 'Kanit', sans-serif; color: #6B4A32;
-    background: #FFFDF8; border: 1.5px solid #C9A27E; border-radius: 999px;
-    padding: 7px 16px; min-height: 36px; cursor: pointer;
-    box-shadow: 0 3px 8px -4px rgba(60, 40, 30, .4);
+    font: 600 18px 'Mali', 'Kanit', sans-serif; color: #FFFDF8;
+    background: #8B5E3C; border: 0; border-radius: 999px;
+    padding: 12px 28px; min-height: 50px; cursor: pointer; white-space: nowrap;
+    box-shadow: 0 2px 0 #6E4529, 0 8px 14px -6px rgba(60, 40, 30, .5);
     -webkit-tap-highlight-color: transparent;
 }
-.ld-fs[hidden] { display: none; }
+.ld-fs:active { transform: translateY(2px); box-shadow: 0 1px 0 #6E4529; }
+.ld-fs[hidden], .ld-fs-hint[hidden] { display: none; }
+.ld-fs-hint {   /* ข้อความอยู่กลาง ลูกศรชี้ลงตรงไปที่ปุ่ม */
+    position: absolute; left: 50%; translate: -50% 0;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 76px);
+    display: flex; flex-direction: column; align-items: center; pointer-events: none;
+    animation: ld-hint 1.2s ease-in-out infinite;
+}
+.ld-fs-hint .cg-hand { font-size: 21px; color: #6B4A32; white-space: nowrap; rotate: -3deg; line-height: 1.1; }
+.ld-fs-hint svg { margin-top: -2px; }
+@keyframes ld-hint { 50% { transform: translateY(4px); } }
+@media (prefers-reduced-motion: reduce) { .ld-fs-hint { animation: none; } }
 
 /* ตอนจบ: ภาพคู่จับมือ เด้งขึ้นนิดๆ ตอนสลับเข้ามา */
 .gu-walker--pair { z-index: 4; }
 .gu-walker--pair.is-held .gu-fig { animation: gu-holdpop .6s cubic-bezier(.3, 1.4, .5, 1); }
 @keyframes gu-holdpop { 0% { transform: scale(.94); } 60% { transform: scale(1.04, .97); } 100% { transform: none; } }
+
+/* iPhone ในแอป: มีแต่คำแนะนำ ไม่มีปุ่ม → วางชิดล่าง ไม่มีลูกศร ตัดบรรทัดได้ */
+.ld-fs-hint.is-text-only { bottom: calc(env(safe-area-inset-bottom, 0px) + 26px); width: 86%; text-align: center; }
+.ld-fs-hint.is-text-only svg { display: none; }
+.ld-fs-hint.is-text-only .cg-hand { white-space: normal; font-size: 19px; }
