@@ -290,7 +290,8 @@
             setTimeout(() => { if (current !== name) return; old.parts.forEach(p => p.stop()); old.bus.volume.value = -Infinity; }, 1500);
         }
         current = name;
-        const at = Tone.getTransport().seconds + 0.05;
+        // เริ่มเพลงห่างจากตอนนี้พอให้พ้นช่วงวางคิวล่วงหน้า (lookAhead 0.2 วิ) โน้ตแรกจะไม่หลุด/เบียดกัน
+        const at = Tone.getTransport().seconds + Tone.getContext().lookAhead + 0.15;
         tr.parts.forEach(p => p.start(at));
         tr.bus.volume.value = -40;
         tr.bus.volume.rampTo(0, 1.6);

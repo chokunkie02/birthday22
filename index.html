@@ -561,7 +561,7 @@
 
     <!-- สคริปต์อยู่ท้ายหน้า: หน้าโหลด (0-100%) ขึ้นให้เห็นทันที ไม่ต้องรอดาวน์โหลด Tone.js ก่อน -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
-    <script src="music.js?v=17"></script>
+    <script src="music.js?v=18"></script>
     <script src="collage.js?v=4"></script>
     <script src="bouquet.js?v=8"></script>
     <script src="record.js?v=10"></script>
@@ -927,8 +927,9 @@
                 setTimeout(() => {
                     Music.sfx('pop');
                     Music.sfx('chime');
-                    Music.scene('happy');
-                    Collage.confetti(stage, PALETTE, 54);
+                    // เพลง HBD เริ่มหลังเสียงป๊อป/กริ๊งนิดนึง ไม่ให้ทุกอย่างเกิดพร้อมกันจนเพลงสะดุด
+                    setTimeout(() => Music.scene('happy'), 350);
+                    Collage.confetti(stage, PALETTE, matchMedia('(pointer: coarse)').matches ? 30 : 54);
                     document.getElementById('cakeHint').classList.add('is-gone');
                     setTimeout(() => document.getElementById('cakeWish').classList.add('is-in'), 1100);
                     setTimeout(() => document.getElementById('cakeNext').classList.add('is-in'), 6000);   // ให้ฉลองกับเพลง Happy Birthday สักพักก่อน ปุ่มจดหมายค่อยขึ้น
