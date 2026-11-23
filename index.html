@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500&family=Mali:wght@400;500;600&family=Caveat:wght@500;700&display=block" rel="stylesheet">
     <link rel="stylesheet" href="theme.css?v=3">
-    <link rel="stylesheet" href="collage.css?v=33">
+    <link rel="stylesheet" href="collage.css?v=34">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         /* ล็อกหน้าไม่ให้เลื่อน/ดึงรีเฟรช → แถบเบราว์เซอร์จะไม่ยืดหดระหว่างเล่น
@@ -509,17 +509,6 @@
       </div>
     </section>
 
-    <!-- ================= ฉาก 7: หน้าสุดท้าย (เพิ่มทีหลัง) — เงียบ ไม่มีเพลง ไม่มีสติกเกอร์ กระดาษแผ่นเดียว ================= -->
-    <section id="scene-last" class="scene last-scene">
-        <div class="last-wrap">
-            <div id="lastPaper" class="last-paper cg-notebook">
-                <div id="lastText" class="last-text"></div>
-                <div id="lastNext" class="last-next">แตะเพื่ออ่านต่อ</div>
-                <div id="lastPage" class="last-page"></div>
-            </div>
-        </div>
-    </section>
-
     <!-- ================= ฉาก 6: ช่อดอกไม้ ================= -->
     <section id="scene-flowers" class="scene">
       <div class="cg-stage" id="flowerStage">
@@ -549,9 +538,8 @@
             <div class="cg-reveal" id="flowerHint" style="position:absolute; left:222px; top:690px; rotate:-4deg;">
                 <div class="cg-hand" style="font-size:24px; color:#6B4A32; white-space:nowrap;">แตะดอกไม้ดูสิ ✿</div>
             </div>
-            <!-- ทางไปหน้าสุดท้าย (เพิ่มทีหลัง): อยู่ที่เดิมของปุ่ม "ดูอีกครั้ง" ขึ้นทันทีที่ช่อดอกไม้เสร็จ -->
-            <div class="cg-reveal" id="toLastWrap" style="position:absolute; left:206px; top:752px; z-index:6; rotate:3deg;">
-                <button id="toLast" class="last-entry">ยังมีอีกหน้านะ →</button>
+            <div class="cg-reveal cg-lift" id="flowerAgain" style="position:absolute; left:230px; top:752px; rotate:5deg;">
+                <button id="replay" class="cg-tag">ดูอีกครั้ง ↺</button>
             </div>
         </div>
       </div>
@@ -661,7 +649,6 @@
             letter: document.getElementById('scene-letter'),
             record: document.getElementById('scene-record'),
             flowers: document.getElementById('scene-flowers'),
-            last: document.getElementById('scene-last'),
         };
         function go(name) {
             Object.values(scenes).forEach(s => s.classList.remove('is-active'));
@@ -1054,7 +1041,7 @@
         function startFlowers() {
             Bouquet.start(bouquetSvg, () => {
                 setTimeout(() => document.getElementById('flowerHint').classList.add('is-in'), 1400);
-                document.getElementById('toLastWrap').classList.add('is-in');   // ปุ่มไปหน้าสุดท้าย ขึ้นทันทีที่ช่อเสร็จ
+                setTimeout(() => document.getElementById('flowerAgain').classList.add('is-in'), 3400);
                 if (!petalTimer && !matchMedia('(prefers-reduced-motion: reduce)').matches) petalTimer = setInterval(fallPetal, 750);
             });
         }
@@ -1089,72 +1076,10 @@
         // =================================================================
         // ฉาก 5: แผ่นเสียง
         // =================================================================
-        // =================================================================
-        // หน้าสุดท้าย (เพิ่มทีหลัง): ตัวหนังสือขึ้นทีละคำ แตะเพื่ออ่านต่อ ไม่มีเพลง
-        // =================================================================
-        const LAST = {
-            pages: [
-                "โอเค ที่จริงหน้านี้ไม่มีหรอกก ผมพึ่งเพิ่มมาเลยย ผมก็แค่อยากจะบอกว่าผมปวดใจมากๆ ผมเสียใจมากๆ แต่ก็ขอบคุณมากๆนะ ที่ทำให้ผมเข้าใจ",
-                "ผมบอกว่าให้คุณไปเคลียร์กับพี่เขาก่อน แต่ว่าคุณก็ยังไม่ได้ไปเคลียร์เลย คุณคิดว่าผมไม่เห็นสตอรี่ที่คุณลงของพี่เขาหรอ คุณยังซ่อนยังปิดอยู่เลยย ผมต้องรู้สึกไงวะ คุณให้ผมทำไงวะ",
-                "เอาเป็นว่าผมขอจบเรื่องราวของเราไว้ดีกว่าเนาะ ดีใจมากๆ รักคุณมาก แต่ผมพอละดีกว่านะเรื่องของเรา คุณไม่ต้องมาหาแล้วนะ ผมไม่อยากเจอแล้วอะ คุณทำผมเสียใจมามากพอแล้วซีมอล",
-                "ผมไม่ชอบเลย ผมเกลียดมากๆกับการที่ไม่ให้เกียรติกัน เบียร์ด้านล่างก็ทำกับผมแบบนี้ผมยังโครตเกลียด แต่นี่เป็นคุณ ผมเกลียดมากๆเลยที่คุณมาทำแบบนี้ ผมไม่มีอะไรจะพูดละ กับการที่คุณทำแบบนี้ซ้ำๆ",
-                "ผมบอกแล้วว่าให้คุณไปเคลียร์กับพี่เขา แต่เข้าใจแหละคุณก็ต้องใช้เวลา เอาเป็นว่าผมเคยบอกแล้วให้ไปเคลียร์กับพี่เขาก่อนแล้วค่อยมาคุยกับผม สุดท้ายคุณมาทำแบบนี้ ผมก็รู้แล้วว่าผมต้องจัดการคุณยังไง",
-                "เอาเป็นว่าผมผิดหวังในตัวคุณ และหลังจากนี้ก็คงไว้ใจคุณไม่ได้อีกแล้วว ขอบคุณทุกทุกอย่างเลยนะ แต่การที่คุณมาทำแบบนี้ผมรับไม่ได้จริงๆ คุณไปใช้ชีวิตกับพี่เขาให้มีความสุขเถอะ เข้าใจว่าต้องใช้เวลานะ แต่เอาเวลาไปใช้กับพี่เขาเถอะนะ ขอให้คุณโชคดี",
-                "ผมจะไม่บล๊อคคุณ แต่ก็จะไม่ทักอะไรคุณอีกแล้วด้วย เว้นไว้แค่เรื่องงานพอนะ ถ้าอะไรไม่จำเป็นไม่ต้องโทร ถ้าไม่มีเรื่องงานผม คงบอกคุณตั้งแต่เมื่อคืน แต่ผมรู้สึกว่า ผมไม่อยากให้คุณเสียใจในวันเกิด",
-                "ผมขอให้โชคดี คุณคงทำดีที่สุดแล้ว แต่สำหรับผมผมคงรักคุณไม่ได้แล้วนะ หรือถ้าคุณอยากจะเป็นแบบเดิม ผมก็บอกเลยว่าไม่มีวันเป็นไปได้แล้วว เสียใจด้วยนะคนสวยย แต่ไม่น่ารักแล้วว",
-                "เอาเป็นว่าไม่ว่าจะเหตุผลอะไร ผมก็เกลียดไปแล้วนะ ผมขอไม่ฟังเหตุผลอะไรจากคุณอีกแล้วนะ ถ้ามีเรื่องงาน (เฉพาะเรื่องกล้อง) ค่อยทักมานะ ถ้าไม่ใช่ ไม่จำเป็นไม่ต้องทักมา",
-                "ผมไม่ชอบที่คุณมาทำแบบนี้ อย่างที่บอก คุณบอกว่ารักผม แต่การกระทำมันไม่ใช่ ถ้าเป็นไปได้ก็ไม่ต้องทักมาอีกนะ แต่เข้าใจว่างานนั้นผมต้องช่วย ถ้ายังไงก็ค่อยทักมานะคนสวยยย ผมไม่ต้องการคุณอีกแล้วนะ",
-                "ผมบอกแล้ว ผมไม่โกรธ ผมรอได้ แต่คุณเลือกที่จะทำแบบนี้ งั้นก็รับสิ่งที่ทำไปนะ ผมอุตส่าห์ทำเว็บนี้ให้ตั้งหลายวัน ตั้งใจทำมากๆ ตั้งใจทำกว่าโปรเจคอีก5555 แต่ก็ไม่มีความหมายแล้วแหละ ผมพอละ จบๆไป"
-            ],
-            from: "— โชกุน",
-        };
-        (function lastPage() {
-            const text = document.getElementById('lastText');
-            const next = document.getElementById('lastNext');
-            const pageEl = document.getElementById('lastPage');
-            const paper = document.getElementById('lastPaper');
-            let page = -1, writing = null, started = false;
-            const seg = (t) => { try { return [...new Intl.Segmenter('th', { granularity: 'word' }).segment(t)].map(s => s.segment); } catch (e) { return [...t]; } };
-            function show(i) {
-                page = i;
-                next.classList.remove('is-in');
-                const total = LAST.pages.length;
-                pageEl.textContent = (Math.min(i, total - 1) + 1) + '/' + total;
-                if (i >= total) {   // จบ: มีแค่ชื่อ ไม่มีปุ่มอะไรต่อ
-                    text.innerHTML = '<p class="last-from">' + LAST.from + '</p>';
-                    pageEl.textContent = '';
-                    return;
-                }
-                const words = seg(LAST.pages[i]);
-                text.innerHTML = '<p class="last-para">' + words.map(w => '<span class="w">' + w.replace(/</g, '&lt;') + '</span>').join('') + '</p>';
-                const spans = [...text.querySelectorAll('.w')];
-                let j = 0;
-                clearInterval(writing);
-                writing = setInterval(() => {
-                    if (j >= spans.length) { clearInterval(writing); writing = null; next.classList.add('is-in'); return; }
-                    const sp = spans[j++]; sp.classList.add('in');
-                    if (sp.textContent.trim()) Music.sfx('type');
-                }, 120);
-            }
-            paper.addEventListener('click', () => {
-                if (page < 0 || page >= LAST.pages.length) return;
-                Music.sfx('tap');
-                if (writing) {   // กำลังเขียน → ให้ขึ้นครบทั้งย่อหน้า
-                    clearInterval(writing); writing = null;
-                    text.querySelectorAll('.w').forEach(s => s.classList.add('in'));
-                    next.classList.add('is-in');
-                    return;
-                }
-                paper.classList.add('is-turning');
-                Music.sfx('paper');
-                setTimeout(() => { show(page + 1); paper.classList.remove('is-turning'); }, 420);
-            });
-            document.getElementById('toLast').addEventListener('click', () => {
-                Music.sfx('paper');
-                go('last');
-                if (!started) { started = true; setTimeout(() => show(0), 1600); }
-            });
-        })();
+        document.getElementById('replay').addEventListener('click', () => {
+            document.getElementById('whiteout').classList.add('is-on');
+            setTimeout(() => location.reload(), 1500);
+        });
 
         GrowUp.init(GROW);
         Record.init(RECORD, {
@@ -1268,14 +1193,13 @@
                 startMusic();                       // การกดปุ่ม = มือถือยอมให้เล่นเสียง
                 readyBtn.disabled = true;
                 readyBtn.classList.add('is-pressed');
-                // ลิงก์ลัดไว้เทส: ?go=flowers (หรือ cake, letter, record, last) กดพร้อมแล้วข้ามไปหน้านั้นเลย
+                // ลิงก์ลัดไว้เทส: ?go=flowers (หรือ cake, letter, record) กดพร้อมแล้วข้ามไปหน้านั้นเลย
                 const jump = (location.search.match(/[?&]go=(\w+)/) || [])[1];
                 const first = jump && scenes[jump] ? jump : 'gate';
                 setTimeout(() => {
                     Music.sfx('chime');
-                    if (first === 'record' || first === 'last') { go('letter'); setTimeout(() => go(first), 50); }   // ให้หน้าแผ่นเสียงโหลดตัวเล่น YouTube
+                    if (first === 'record') { go('letter'); setTimeout(() => go(first), 50); }   // ให้หน้าแผ่นเสียงโหลดตัวเล่น YouTube
                     else go(first);
-                    if (first === 'last') setTimeout(() => document.getElementById('toLast').click(), 100);
                 }, 450);
             });
         })();
